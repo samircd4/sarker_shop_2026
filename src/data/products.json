@@ -1,0 +1,122 @@
+[
+    {
+        "id": 1,
+        "name": "Wireless Bluetooth Headphones",
+        "price": 89.99,
+        "category": "Electronics",
+        "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+        "rating": 4.5,
+        "reviews": 128,
+        "description": "High-quality wireless headphones with noise cancellation"
+    },
+    {
+        "id": 2,
+        "name": "Smartphone Case",
+        "price": 24.99,
+        "category": "Accessories",
+        "image": "https://images.unsplash.com/photo-1601599561213-832382fd07ba?w=400&h=400&fit=crop",
+        "rating": 4.2,
+        "reviews": 89,
+        "description": "Durable protective case for smartphones"
+    },
+    {
+        "id": 3,
+        "name": "Laptop Stand",
+        "price": 45.99,
+        "category": "Accessories",
+        "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&h=400&fit=crop",
+        "rating": 4.7,
+        "reviews": 156,
+        "description": "Adjustable laptop stand for better ergonomics"
+    },
+    {
+        "id": 4,
+        "name": "Wireless Mouse",
+        "price": 32.99,
+        "category": "Electronics",
+        "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=400&fit=crop",
+        "rating": 4.3,
+        "reviews": 203,
+        "description": "Ergonomic wireless mouse with precision tracking"
+    },
+    {
+        "id": 5,
+        "name": "Coffee Mug",
+        "price": 15.99,
+        "category": "Home",
+        "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop",
+        "rating": 4.6,
+        "reviews": 342,
+        "description": "Ceramic coffee mug with elegant design"
+    },
+    {
+        "id": 6,
+        "name": "Desk Lamp",
+        "price": 67.99,
+        "category": "Home",
+        "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop",
+        "rating": 4.4,
+        "reviews": 178,
+        "description": "LED desk lamp with adjustable brightness"
+    },
+    {
+        "id": 7,
+        "name": "Bluetooth Speaker",
+        "price": 79.99,
+        "category": "Electronics",
+        "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop",
+        "rating": 4.8,
+        "reviews": 267,
+        "description": "Portable Bluetooth speaker with deep bass"
+    },
+    {
+        "id": 8,
+        "name": "Notebook Set",
+        "price": 19.99,
+        "category": "Office",
+        "image": "https://images.unsplash.com/photo-1531346680769-a1d79b57de5c?w=400&h=400&fit=crop",
+        "rating": 4.1,
+        "reviews": 95,
+        "description": "Premium notebook set with various sizes"
+    },
+    {
+        "id": 9,
+        "name": "Plant Pot",
+        "price": 28.99,
+        "category": "Home",
+        "image": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=400&fit=crop",
+        "rating": 4.5,
+        "reviews": 134,
+        "description": "Ceramic plant pot with drainage holes"
+    },
+    {
+        "id": 10,
+        "name": "USB Cable",
+        "price": 12.99,
+        "category": "Electronics",
+        "image": "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=400&h=400&fit=crop",
+        "rating": 4.0,
+        "reviews": 289,
+        "description": "High-speed USB-C cable for fast charging"
+    },
+    {
+        "id": 11,
+        "name": "Sticky Notes",
+        "price": 8.99,
+        "category": "Office",
+        "image": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=400&fit=crop",
+        "rating": 4.3,
+        "reviews": 167,
+        "description": "Colorful sticky notes for organization"
+    },
+    {
+        "id": 12,
+        "name": "Wall Clock",
+        "price": 34.99,
+        "category": "Home",
+        "image": "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=400&h=400&fit=crop",
+        "rating": 4.6,
+        "reviews": 98,
+        "description": "Modern wall clock with silent movement"
+    }
+]
