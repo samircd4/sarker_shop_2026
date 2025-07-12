@@ -2,7 +2,7 @@ import { FaStar, FaShoppingCart } from "react-icons/fa";
 import { IoFlashOutline } from "react-icons/io5";
 
 const Product = ({ product }) => (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
         <div className="relative">
             <img
                 src={product.image}
@@ -13,7 +13,7 @@ const Product = ({ product }) => (
                 <IoFlashOutline className="text-yellow-500 text-2xl" />
             </div>
         </div>
-        <div className="p-2">
+        <div className="p-2 flex flex-col flex-1">
             <div className="flex items-center mb-2">
                 <div className="flex text-yellow-400">
                     {[...Array(5)].map((_, i) => (
@@ -27,9 +27,11 @@ const Product = ({ product }) => (
             </div>
             <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
             <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-            <div className="flex items-center justify-between">
-                <span className="text-md font-bold text-red-600">BDT {product.price}</span>
-                <button className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-lg flex items-center transition-colors">
+            <div className="mt-auto">
+                <div className="mb-2">
+                    <span className="text-md font-bold text-red-600">BDT {product.price}</span>
+                </div>
+                <button className="w-full bg-red-500 hover:bg-red-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors">
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                 </button>

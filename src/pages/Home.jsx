@@ -49,7 +49,7 @@ const Home = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-        }, 5000);
+        }, 3000);
         return () => clearInterval(interval);
     }, [heroSlides.length]);
 
@@ -166,8 +166,8 @@ const Home = () => {
             </section>
 
             {/* Featured Products Section */}
-            <section className="py-16">
-                <div className="container mx-auto px-4 md:px-8">
+            <section className="py-2">
+                <div className="container mx-auto px-1 md:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto">
@@ -175,7 +175,7 @@ const Home = () => {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                         {featuredProducts.map((product) => (
                             <Product key={product.id} product={product} />
                         ))}

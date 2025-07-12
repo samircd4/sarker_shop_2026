@@ -13,7 +13,11 @@ const Navbar = () => {
             <div className="max-w-6xl mx-auto flex justify-between items-center">
                 {/* Brand and Menu section */}
                 <div className="flex gap-7 items-center">
-                    <Link to={'/'} className='text-2xl font-bold text-gray-700'>Sarker Shop</Link>
+                    <Link to={'/'} className="text-2xl font-bold">
+                        <span className="text-red-500">Sarker</span>
+                        <span className="text-gray-700"> Shop</span>
+                    </Link>
+                
                 </div>
                 {/* Menu section */}
                 <nav className='flex gap-7 items-center p-1'>
