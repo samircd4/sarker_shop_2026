@@ -31,7 +31,7 @@ const Product = ({ product }) => (
                 <div className="mb-2">
                     <span className="text-md font-bold text-red-600">BDT {product.price}</span>
                 </div>
-                <button className="w-full bg-red-500 hover:bg-red-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors">
+                <button className="w-full bg-red-500 hover:bg-red-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                 </button>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCaretDown } from 'react-icons/fa'
 import { IoCartOutline } from 'react-icons/io5'
 import { Link, NavLink } from 'react-router-dom'
@@ -9,8 +9,23 @@ import SearchBar from './SearchBar';
 
 const Navbar = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [showDrawer, setShowDrawer] = useState(false); // New state for controlling drawer visibility
+    const [animationClass, setAnimationClass] = useState(''); // New state for animation class
     const [searchFocused, setSearchFocused] = useState(false); // NEW
     const cartItem = 8;
+
+    useEffect(() => {
+        if (drawerOpen) {
+            setShowDrawer(true);
+            setAnimationClass('animate-slide-in-left');
+        } else {
+            setAnimationClass('animate-slide-out-left');
+            const timer = setTimeout(() => {
+                setShowDrawer(false);
+            }, 300); // Duration of slide-out animation
+            return () => clearTimeout(timer);
+        }
+    }, [drawerOpen]);
 
     return (
         <>
@@ -64,15 +79,10 @@ const Navbar = () => {
                 </div>
             </div>
             {/* Side Drawer for Categories */}
-            {drawerOpen && (
-                <div className="fixed inset-0 z-50 flex">
-                    {/* Overlay */}
-                    <div
-                        className="fixed inset-0 bg-black bg-opacity-30"
-                        onClick={() => setDrawerOpen(false)}
-                    />
+            {showDrawer && (
+                <div className="fixed inset-0 z-50 flex" onClick={() => setDrawerOpen(false)}>
                     {/* Drawer */}
-                    <div className="relative bg-white w-64 h-full shadow-lg z-50 animate-slide-in-left">
+                    <div className={`relative bg-white w-64 h-full shadow-lg z-50 ${animationClass}`} onClick={(e) => e.stopPropagation()}>
                         <button
                             className="absolute top-3 right-3 text-2xl"
                             onClick={() => setDrawerOpen(false)}
@@ -93,6 +103,13 @@ const Navbar = () => {
                 }
                 .animate-slide-in-left {
                     animation: slide-in-left 0.3s cubic-bezier(0.4,0,0.2,1) both;
+                }
+                @keyframes slide-out-left {
+                    from { transform: translateX(0); }
+                    to { transform: translateX(-100%); }
+                }
+                .animate-slide-out-left {
+                    animation: slide-out-left 0.3s cubic-bezier(0.4,0,0.2,1) both;
                 }
                 `}
             </style>

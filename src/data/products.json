@@ -7,7 +7,8 @@
         "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
         "rating": 4.5,
         "reviews": 128,
-        "description": "High-quality wireless headphones with noise cancellation"
+        "description": "High-quality wireless headphones with noise cancellation",
+        "is_featured": true
     },
     {
         "id": 2,
@@ -17,7 +18,8 @@
         "image": "https://images.unsplash.com/photo-1601599561213-832382fd07ba?w=400&h=400&fit=crop",
         "rating": 4.2,
         "reviews": 89,
-        "description": "Durable protective case for smartphones"
+        "description": "Durable protective case for smartphones",
+        "is_featured": false
     },
     {
         "id": 3,
@@ -27,7 +29,8 @@
         "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&h=400&fit=crop",
         "rating": 4.7,
         "reviews": 156,
-        "description": "Adjustable laptop stand for better ergonomics"
+        "description": "Adjustable laptop stand for better ergonomics",
+        "is_featured": true
     },
     {
         "id": 4,
@@ -37,7 +40,8 @@
         "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=400&fit=crop",
         "rating": 4.3,
         "reviews": 203,
-        "description": "Ergonomic wireless mouse with precision tracking"
+        "description": "Ergonomic wireless mouse with precision tracking",
+        "is_featured": false
     },
     {
         "id": 5,
@@ -47,7 +51,8 @@
         "image": "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop",
         "rating": 4.6,
         "reviews": 342,
-        "description": "Ceramic coffee mug with elegant design"
+        "description": "Ceramic coffee mug with elegant design",
+        "is_featured": true
     },
     {
         "id": 6,
@@ -57,7 +62,8 @@
         "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop",
         "rating": 4.4,
         "reviews": 178,
-        "description": "LED desk lamp with adjustable brightness"
+        "description": "LED desk lamp with adjustable brightness",
+        "is_featured": false
     },
     {
         "id": 7,
@@ -67,7 +73,8 @@
         "image": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop",
         "rating": 4.8,
         "reviews": 267,
-        "description": "Portable Bluetooth speaker with deep bass"
+        "description": "Portable Bluetooth speaker with deep bass",
+        "is_featured": true
     },
     {
         "id": 8,
@@ -77,7 +84,8 @@
         "image": "https://images.unsplash.com/photo-1531346680769-a1d79b57de5c?w=400&h=400&fit=crop",
         "rating": 4.1,
         "reviews": 95,
-        "description": "Premium notebook set with various sizes"
+        "description": "Premium notebook set with various sizes",
+        "is_featured": false
     },
     {
         "id": 9,
@@ -87,7 +95,8 @@
         "image": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&h=400&fit=crop",
         "rating": 4.5,
         "reviews": 134,
-        "description": "Ceramic plant pot with drainage holes"
+        "description": "Ceramic plant pot with drainage holes",
+        "is_featured": true
     },
     {
         "id": 10,
@@ -97,7 +106,8 @@
         "image": "https://images.unsplash.com/photo-1586816879360-004f5b0c51e3?w=400&h=400&fit=crop",
         "rating": 4.0,
         "reviews": 289,
-        "description": "High-speed USB-C cable for fast charging"
+        "description": "High-speed USB-C cable for fast charging",
+        "is_featured": false
     },
     {
         "id": 11,
@@ -107,7 +117,8 @@
         "image": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=400&fit=crop",
         "rating": 4.3,
         "reviews": 167,
-        "description": "Colorful sticky notes for organization"
+        "description": "Colorful sticky notes for organization",
+        "is_featured": false
     },
     {
         "id": 12,
@@ -117,6 +128,7 @@
         "image": "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=400&h=400&fit=crop",
         "rating": 4.6,
         "reviews": 98,
-        "description": "Modern wall clock with silent movement"
+        "description": "Modern wall clock with silent movement",
+        "is_featured": true
     }
 ]
