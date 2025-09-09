@@ -26,8 +26,8 @@ const ResponsiveMenu = () => {
                             key={item.path}
                             to={item.path}
                             className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors ${isActive
-                                    ? 'text-red-500 bg-red-50'
-                                    : 'text-gray-600 hover:text-red-500'
+                                    ? 'text-primary-500 bg-primary-50'
+                                    : 'text-neutral-600 hover:text-primary-500'
                                 }`}
                         >
                             <Icon size={20} />

@@ -29,9 +29,9 @@ const Product = ({ product }) => (
             <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
             <div className="mt-auto">
                 <div className="mb-2">
-                    <span className="text-md font-bold text-red-600">BDT {product.price}</span>
+                    <span className="text-md font-bold text-primary-600">BDT {product.price}</span>
                 </div>
-                <button className="w-full bg-red-500 hover:bg-red-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                <button className="w-full bg-primary-500 hover:bg-primary-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                 </button>

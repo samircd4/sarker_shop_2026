@@ -53,8 +53,8 @@ const Navbar = () => {
                             to={'/'}
                             className="text-2xl font-bold whitespace-nowrap"
                         >
-                            <span className="text-red-500">Sarker</span>
-                            <span className="text-gray-700"> Shop</span>
+                            <span className="text-primary-500">Sarker</span>
+                            <span className="text-neutral-700"> Shop</span>
                         </Link>
                     </div>
                     {/* SearchBar */}
@@ -67,9 +67,9 @@ const Navbar = () => {
                     {/* Menu section */}
                     <nav className='flex gap-7 items-center p-1'>
                         <ul className='md:flex gap-7 items-center text-xl font-semibold hidden'>
-                            <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-red-500" : "text-black"} cursor-pointer`}><li>Home</li></NavLink>
-                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-red-500" : "text-black"} cursor-pointer`}><li>Products</li></NavLink>
-                            <NavLink to={"/about"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-red-500" : "text-black"} cursor-pointer`}><li>About</li></NavLink>
+                            <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>Home</li></NavLink>
+                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>Products</li></NavLink>
+                            <NavLink to={'/about'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>About</li></NavLink>
                         </ul>
                         <Link to={'/cart'} className='relative'>
                             <IoCartOutline className='h-7 w-7' />

@@ -13,7 +13,7 @@ const Footer = () => {
                         {/* Brand & Contact */}
                         <div>
                             <h2 className="text-2xl font-bold mb-2">
-                                <span className="text-red-500">Sarker</span>
+                                <span className="text-primary-500">Sarker</span>
                                 <span className="text-white"> Shop</span>
                             </h2>
                             <p>123 Electronics St, Style City,<br />NY 10001</p>
@@ -33,9 +33,9 @@ const Footer = () => {
                         <div>
                             <h3 className="text-xl font-bold text-white mb-2">Follow Us</h3>
                             <div className="flex space-x-4 mt-2">
-                                <a href="#" className="hover:text-red-500"><FaFacebookF size={22} /></a>
-                                <a href="#" className="hover:text-red-500"><FaTwitter size={22} /></a>
-                                <a href="#" className="hover:text-red-500"><FaInstagram size={22} /></a>
+                                <a href="#" className="hover:text-primary-500"><FaFacebookF size={22} /></a>
+                                <a href="#" className="hover:text-primary-500"><FaTwitter size={22} /></a>
+                                <a href="#" className="hover:text-primary-500"><FaInstagram size={22} /></a>
                             </div>
                         </div>
                         {/* Newsletter */}
@@ -50,7 +50,7 @@ const Footer = () => {
                                 />
                                 <button
                                     type="submit"
-                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-r-md font-semibold"
+                                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-r-md font-semibold"
                                 >
                                     Subscribe
                                 </button>
@@ -65,7 +65,7 @@ const Footer = () => {
                     {/* Support Button */}
                     <button
                         onClick={() => setChatOpen(true)}
-                        className="fixed right-8 bottom-8 bg-red-500 hover:bg-red-600 text-white rounded-full p-3 shadow-lg transition-colors z-50 cursor-pointer"
+                        className="fixed right-8 bottom-8 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-3 shadow-lg transition-colors z-50 cursor-pointer"
                         aria-label="Support"
                         title="Support"
                     >

@@ -36,7 +36,7 @@ const Products = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
             </div>
         )
     }
@@ -53,7 +53,7 @@ const Products = () => {
                             key={category}
                             onClick={() => setSelectedCategory(category)}
                             className={`px-4 py-2 cursor-pointer rounded-full text-sm font-medium transition-colors ${selectedCategory === category
-                                ? 'bg-red-500 text-white'
+                                ? 'bg-primary-500 text-white'
                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                 }`}
                         >

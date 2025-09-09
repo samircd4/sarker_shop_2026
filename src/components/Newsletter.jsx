@@ -15,7 +15,7 @@ const Newsletter = () => {
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-lg">
       {/* Animated Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 animate-gradient-x" />
+      <div className="absolute inset-0 bg-gradient-to-r from-secondary-500 via-primary-500 to-accent-500 animate-gradient-x" />
       <div className="absolute inset-0 bg-black/40" /> {/* Dark overlay for text */}
 
       {/* Content */}
@@ -43,7 +43,7 @@ const Newsletter = () => {
 
         <button
           onClick={handleSubscribe}
-          className="mt-2 bg-white text-blue-600 px-6 py-2 md:px-8 md:py-3 rounded-lg font-semibold shadow-lg transition transform hover:-translate-y-1 hover:scale-105"
+          className="mt-2 bg-white text-secondary-600 px-6 py-2 md:px-8 md:py-3 rounded-lg font-semibold shadow-lg transition transform hover:-translate-y-1 hover:scale-105"
         >
           {subscribed ? "Subscribed!" : "Subscribe"}
         </button>

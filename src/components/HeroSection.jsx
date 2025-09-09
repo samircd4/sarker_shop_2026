@@ -92,7 +92,7 @@ const HeroSection = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
             >
-              <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold shadow-lg transition">
+              <button className="bg-accent-600 hover:bg-accent-700 px-6 py-3 rounded-lg font-semibold shadow-lg transition">
                 Shop Now
               </button>
             </motion.div>
@@ -120,9 +120,7 @@ const HeroSection = () => {
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full ${
-              current === index ? "bg-purple-600" : "bg-white/60"
-            }`}
+            className={`w-3 h-3 rounded-full ${              current === index ? "bg-accent-600" : "bg-white/60"            }`}
           />
         ))}
       </div>

@@ -36,9 +36,9 @@ const SupportChat = ({ onClose }) => {
       `}
             style={{ willChange: "opacity, transform" }}
         >
-            <div className="bg-red-500 text-white px-1 py-1 rounded-t-lg flex justify-between items-center">
+            <div className="bg-primary-500 text-white px-1 py-1 rounded-t-lg flex justify-between items-center">
                 <span>Support Chat</span>
-                <button onClick={handleClose} className="bg-white text-red-500 p-1 text-2xl cursor-pointer rounded-sm font-bold">&times;</button>
+                <button onClick={handleClose} className="bg-white text-primary-500 p-1 text-2xl cursor-pointer rounded-sm font-bold">&times;</button>
             </div>
             <div className="flex-1 p-4 overflow-y-auto max-h-64">
                 {messages.map((msg, idx) => (
@@ -48,7 +48,7 @@ const SupportChat = ({ onClose }) => {
                     >
                         <span
                             className={`inline-block px-3 py-1 rounded-lg ${msg.from === "user"
-                                    ? "bg-red-100 text-red-700"
+                                    ? "bg-primary-100 text-primary-700"
                                     : "bg-gray-200 text-gray-800"
                                 }`}
                         >
@@ -67,7 +67,7 @@ const SupportChat = ({ onClose }) => {
                 />
                 <button
                     type="submit"
-                    className="bg-red-500 text-white px-4 py-2 rounded-r-lg hover:bg-red-600"
+                    className="bg-primary-500 text-white px-4 py-2 rounded-r-lg hover:bg-primary-600"
                 >
                     Send
                 </button>
@@ -76,4 +76,4 @@ const SupportChat = ({ onClose }) => {
     );
 };
 
-export default SupportChat; 
+export default SupportChat;
