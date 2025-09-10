@@ -93,6 +93,22 @@ export default {
         medium: 'var(--border-medium)',
         dark: 'var(--border-dark)',
       },
+      animation: {
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        'pulse-glow': {
+          '0%, 100%': {
+            boxShadow: '0 0 5px var(--primary-600), 0 0 10px var(--primary-600), 0 0 15px var(--primary-600)',
+          },
+          '50%': {
+            boxShadow: '0 0 10px var(--primary-600), 0 0 20px var(--primary-600), 0 0 30px var(--primary-600)',
+          },
+        },
+      },
+      boxShadow: {
+        'primary-glow': '0 0 15px var(--primary-600), 0 0 25px var(--primary-600), 0 0 35px var(--primary-600)',
+      },
     },
   },
   plugins: [],

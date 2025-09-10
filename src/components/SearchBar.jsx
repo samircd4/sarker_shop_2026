@@ -61,14 +61,14 @@ const SearchBar = ({ onFocus, onBlur }) => {
                     onClick={() => setShowInput(true)}
                     aria-label="Open search"
                 >
-                    <FiSearch className="text-orange-500 text-2xl" />
+                    <FiSearch className="text-purple-600 text-2xl" />
                 </button>
             )}
             {/* Search input: always visible on sm+, toggled on mobile */}
             <form
                 onSubmit={handleSubmit}
                 className={`
-          w-full flex items-center border-2 border-orange-400 rounded-full px-4 py-2 bg-white
+          w-full flex items-center border-2 border-purple-600 rounded-full px-4 py-2 bg-white
           transition-all duration-300
           ${showInput ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
           sm:opacity-100 sm:scale-100 sm:pointer-events-auto
@@ -85,7 +85,7 @@ const SearchBar = ({ onFocus, onBlur }) => {
                     onBlur={onBlur}
                 />
                 <button type="submit">
-                    <FiSearch className="text-orange-500 text-xl" />
+                    <FiSearch className="text-purple-600 text-xl" />
                 </button>
             </form>
             {/* Dropdown for filtered products with animation */}

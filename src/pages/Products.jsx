@@ -53,7 +53,7 @@ const Products = () => {
                             key={category}
                             onClick={() => setSelectedCategory(category)}
                             className={`px-4 py-2 cursor-pointer rounded-full text-sm font-medium transition-colors ${selectedCategory === category
-                                ? 'bg-primary-500 text-white'
+                                ? 'bg-purple-500 text-white'
                                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                 }`}
                         >

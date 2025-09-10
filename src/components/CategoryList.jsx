@@ -9,11 +9,9 @@ const categories = [
     "Smart TV & Accessories",
     "Computer & Accessories",
     "Wireless Speakers",
-    "Security Cameras",
     "Smart Home Appliances",
     "Charger & Cables",
     "Powerbanks",
-    "Network Components",
     "Health & Outdoors"
 ];
 
@@ -32,6 +30,9 @@ const CategoryList = () => (
                     {cat}
                 </li>
             ))}
+            <li>
+                <button className='hidden sm:block w-full text-center p-2 bg-purple-600 text-white font-bold rounded cursor-pointer py-3'>More</button>
+            </li>
         </ul>
     </div>
 );

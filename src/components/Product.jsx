@@ -10,16 +10,16 @@ const Product = ({ product }) => (
                 className="w-full h-64 object-cover"
             />
             <div className="absolute top-4 right-4">
-                <IoFlashOutline className="text-yellow-500 text-2xl" />
+                <IoFlashOutline className="text-purple-600 text-2xl" />
             </div>
         </div>
         <div className="p-2 flex flex-col flex-1">
             <div className="flex items-center mb-2">
-                <div className="flex text-yellow-400">
+                <div className="flex text-purple-600">
                     {[...Array(5)].map((_, i) => (
                         <FaStar
                             key={i}
-                            className={i < Math.floor(product.rating) ? "text-yellow-400" : "text-gray-300"}
+                            className={i < Math.floor(product.rating) ? "text-purple-600" : "text-gray-300"}
                         />
                     ))}
                 </div>
@@ -31,7 +31,7 @@ const Product = ({ product }) => (
                 <div className="mb-2">
                     <span className="text-md font-bold text-primary-600">BDT {product.price}</span>
                 </div>
-                <button className="w-full bg-primary-500 hover:bg-primary-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                 </button>

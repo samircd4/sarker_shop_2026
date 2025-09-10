@@ -1,8 +1,12 @@
 # Sarker Shop 2026
 
-![Project Screenshot](sarker_shop.png)
+## Preview
 
+### Desktop View (MacBook)
+![MacBook Preview](Macbook-Air-localhost.png)
 
+### Mobile View (iPhone)
+![iPhone Preview](iPhone-14-Plus-localhost.png)
 
 ## Getting Started
 

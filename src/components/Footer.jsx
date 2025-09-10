@@ -50,7 +50,7 @@ const Footer = () => {
                                 />
                                 <button
                                     type="submit"
-                                    className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-r-md font-semibold"
+                                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-r-md font-semibold"
                                 >
                                     Subscribe
                                 </button>
@@ -65,7 +65,7 @@ const Footer = () => {
                     {/* Support Button */}
                     <button
                         onClick={() => setChatOpen(true)}
-                        className="fixed right-8 bottom-8 bg-primary-500 hover:bg-primary-600 text-white rounded-full p-3 shadow-lg transition-colors z-50 cursor-pointer"
+                        className="fixed right-8 bottom-8 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-3 shadow-lg transition-colors z-50 cursor-pointer"
                         aria-label="Support"
                         title="Support"
                     >

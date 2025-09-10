@@ -29,7 +29,7 @@ const Navbar = () => {
 
     return (
         <>
-            <div className='bg-white shadow-lg p-3 sm:p-4'>
+            <div className='bg-white shadow-lg p-3 sm:p-4 fixed top-0 left-0 right-0 z-40'>
                 <div className="max-w-6xl mx-auto flex justify-between items-center">
                     {/* Hamburger for mobile */}
                     <button
@@ -53,7 +53,7 @@ const Navbar = () => {
                             to={'/'}
                             className="text-2xl font-bold whitespace-nowrap"
                         >
-                            <span className="text-primary-500">Sarker</span>
+                            <span className="text-purple-600">Sarker</span>
                             <span className="text-neutral-700"> Shop</span>
                         </Link>
                     </div>
@@ -73,7 +73,7 @@ const Navbar = () => {
                         </ul>
                         <Link to={'/cart'} className='relative'>
                             <IoCartOutline className='h-7 w-7' />
-                            <span className='bg-red-500 px-2 rounded-full absolute -top-3 -right-3 text-white'>{cartItem}</span>
+                            <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{cartItem}</span>
                         </Link>
                     </nav>
                 </div>
