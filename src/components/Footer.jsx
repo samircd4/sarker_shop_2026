@@ -13,7 +13,7 @@ const Footer = () => {
                         {/* Brand & Contact */}
                         <div>
                             <h2 className="text-2xl font-bold mb-2">
-                                <span className="text-primary-500">Sarker</span>
+                                <span className="text-purple-600">Sarker</span>
                                 <span className="text-white"> Shop</span>
                             </h2>
                             <p>123 Electronics St, Style City,<br />NY 10001</p>
