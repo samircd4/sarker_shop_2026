@@ -5,14 +5,17 @@ import { Link, NavLink } from 'react-router-dom'
 import { FiMenu } from 'react-icons/fi';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
-// import { useCart } from '../context/CartContext'
+import { useCart } from '../context/CartContext'
+import CartPanel from './CartPanel'
 
 const Navbar = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [showDrawer, setShowDrawer] = useState(false); // New state for controlling drawer visibility
     const [animationClass, setAnimationClass] = useState(''); // New state for animation class
     const [searchFocused, setSearchFocused] = useState(false); // NEW
-    const cartItem = 8;
+    const [cartOpen, setCartOpen] = useState(false);
+    const { cartItem } = useCart();
+    const totalCount = cartItem.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
     useEffect(() => {
         if (drawerOpen) {
@@ -67,17 +70,20 @@ const Navbar = () => {
                     {/* Menu section */}
                     <nav className='flex gap-7 items-center p-1'>
                         <ul className='md:flex gap-7 items-center text-xl font-semibold hidden'>
-                            <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>Home</li></NavLink>
-                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>Products</li></NavLink>
-                            <NavLink to={'/about'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500" : "text-neutral-900"} cursor-pointer`}><li>About</li></NavLink>
+                            <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Home</li></NavLink>
+                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Products</li></NavLink>
+                            <NavLink to={'/about'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>About</li></NavLink>
                         </ul>
-                        <Link to={'/cart'} className='relative'>
+                        <button className='relative' onClick={() => setCartOpen(true)} aria-label="Open cart">
                             <IoCartOutline className='h-7 w-7' />
-                            <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{cartItem}</span>
-                        </Link>
+                            <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
+                        </button>
+                        
                     </nav>
                 </div>
             </div>
+            {/* Cart Panel */}
+            <CartPanel open={cartOpen} onClose={() => setCartOpen(false)} />
             {/* Side Drawer for Categories */}
             {showDrawer && (
                 <div className="fixed inset-0 z-50 flex" onClick={() => setDrawerOpen(false)}>

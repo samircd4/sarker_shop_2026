@@ -10,8 +10,8 @@ import PromoBanner from '../components/PromoBanner';
 import Newsletter from '../components/Newsletter';
 
 const Home = () => (
-  <>
-    <div className="w-[95%] mx-auto flex flex-col md:flex-row gap-4 md:gap-6 px-2">
+  <div className="sm:w-[90%] mx-auto">
+    <div className="w-full mx-auto flex flex-col md:flex-row gap-4 md:gap-6 px-2">
       {/* Category Sidebar (desktop/tablet only) */}
       <div className="w-full md:w-60 mb-2 md:mb-0 hidden md:block">
         <CategoryList />
@@ -25,7 +25,7 @@ const Home = () => (
     </div>
 
     {/* Components moved out with 95% width */}
-    <div className="w-[95%] mx-auto flex flex-col gap-8 px-2 mt-8">
+    <div className="w-full mx-auto flex flex-col gap-8 px-2 mt-8">
       {/* Promotional Banner */}
       <PromoBanner />
 
@@ -44,7 +44,7 @@ const Home = () => (
       {/* Newsletter Signup */}
       <Newsletter />
     </div>
-  </>
+  </div>
 );
 
 export default Home;

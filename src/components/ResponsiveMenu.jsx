@@ -12,11 +12,12 @@ const ResponsiveMenu = () => {
         { path: '/products', label: 'Products', icon: FaShoppingBag },
         { path: '/about', label: 'About', icon: FaInfoCircle },
         { path: '/contact', label: 'Contact', icon: FaPhone },
+        { path: '/account', label: 'Account', icon: FaUserCircle },
     ]
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
-            <div className="flex justify-around items-center py-4">
+            <div className="flex justify-around items-center py-4 px-2">
                 {menuItems.map((item) => {
                     const Icon = item.icon
                     const isActive = location.pathname === item.path

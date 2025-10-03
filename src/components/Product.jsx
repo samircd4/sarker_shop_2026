@@ -1,7 +1,10 @@
 import { FaStar, FaShoppingCart } from "react-icons/fa";
+import { useCart } from "../context/CartContext.jsx";
 import { IoFlashOutline } from "react-icons/io5";
 
-const Product = ({ product }) => (
+const Product = ({ product }) => {
+    const { addToCart } = useCart();
+    return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
         <div className="relative">
             <img
@@ -26,18 +29,19 @@ const Product = ({ product }) => (
                 <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
             </div>
             <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-            <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+            {/* <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p> */}
             <div className="mt-auto">
                 <div className="mb-2">
                     <span className="text-md font-bold text-primary-600">BDT {product.price}</span>
                 </div>
-                <button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                <button onClick={() => addToCart(product)} className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <FaShoppingCart className="mr-2" />
                     Add to Cart
                 </button>
             </div>
         </div>
     </div>
-);
+    );
+}
 
 export default Product;
