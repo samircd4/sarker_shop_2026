@@ -13,7 +13,7 @@
     {
         "id": 2,
         "name": "Smartphone Case",
-        "price": 24.99,
+        "price": 24000,
         "category": "Accessories",
         "image": "https://images.unsplash.com/photo-1601599561213-832382fd07ba?w=400&h=400&fit=crop",
         "rating": 4.2,

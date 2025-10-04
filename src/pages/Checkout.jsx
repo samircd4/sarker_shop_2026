@@ -1,191 +1,425 @@
-import React, { useState } from 'react'
-import { useCart } from '../context/CartContext.jsx'
-
-const steps = ['Shipping', 'Billing', 'Review', 'Payment']
+import React, { useState, useMemo } from "react";
+import { useCart } from "../context/CartContext.jsx";
+import {
+  FaMinus,
+  FaPlus,
+  FaTrash,
+  FaHome,
+  FaBuilding,
+  FaCheck,
+  FaMobileAlt,
+} from "react-icons/fa";
+import { FaMoneyBillWave } from "react-icons/fa";
+import { SiVisa, SiMastercard } from "react-icons/si";
 
 const Checkout = () => {
-  const { cartItem } = useCart()
-  const [currentStep, setCurrentStep] = useState(0)
-  const [shipping, setShipping] = useState({ fullName: '', address: '', city: '', postalCode: '', country: '' })
-  const [billing, setBilling] = useState({ fullName: '', address: '', city: '', postalCode: '', country: '' })
-  const [payment, setPayment] = useState({ method: 'card', cardNumber: '', expiry: '', cvv: '' })
-  const [errors, setErrors] = useState({})
+  const { cartItem, updateQuantity, deleteItem } = useCart();
 
-  const subtotal = cartItem.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
-  const taxRate = 0.08
-  const tax = subtotal * taxRate
-  const total = subtotal + tax
+  // Removed selection checkboxes for a cleaner mobile layout
 
-  const validate = () => {
-    const e = {}
-    if (currentStep === 0) {
-      ['fullName', 'address', 'city', 'postalCode', 'country'].forEach((f) => {
-        if (!shipping[f]?.trim()) e[`shipping.${f}`] = 'Required'
-      })
-    } else if (currentStep === 1) {
-      ['fullName', 'address', 'city', 'postalCode', 'country'].forEach((f) => {
-        if (!billing[f]?.trim()) e[`billing.${f}`] = 'Required'
-      })
-    } else if (currentStep === 3) {
-      if (payment.method === 'card') {
-        if (!payment.cardNumber.trim()) e['payment.cardNumber'] = 'Required'
-        if (!payment.expiry.trim()) e['payment.expiry'] = 'Required'
-        if (!payment.cvv.trim()) e['payment.cvv'] = 'Required'
-      }
-    }
-    setErrors(e)
-    return Object.keys(e).length === 0
-  }
+  // Delivery address
+  const [addressType, setAddressType] = useState("home");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [division, setDivision] = useState("");
+  const [district, setDistrict] = useState("");
+  const [subDistrict, setSubDistrict] = useState("");
 
-  const next = () => {
-    if (!validate()) return
-    setCurrentStep((s) => Math.min(s + 1, steps.length - 1))
-  }
-  const back = () => setCurrentStep((s) => Math.max(s - 1, 0))
+  // Payment
+  const [paymentMethod, setPaymentMethod] = useState("card_mfs");
+
+  // Voucher/discount
+  const [voucher, setVoucher] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const applyVoucher = () => {
+    setDiscount(voucher.trim().toUpperCase() === "SAVE300" ? 300 : 0);
+  };
+
+  // Terms
+  const [accepted, setAccepted] = useState(false);
+
+  // Totals (based on selected rows)
+  const subtotal = useMemo(() => {
+    return cartItem.reduce(
+      (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+      0
+    );
+  }, [cartItem]);
+  const deliveryCharge = 0;
+  const deliveryDiscount = 0;
+  const totalPayable = Math.max(
+    0,
+    subtotal + deliveryCharge - deliveryDiscount - discount
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6 text-neutral-800">Checkout</h1>
-
-      {/* Stepper */}
-      <div className="flex items-center justify-between mb-6">
-        {steps.map((label, idx) => (
-          <div key={label} className="flex-1 flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${idx <= currentStep ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-600'}`}>{idx + 1}</div>
-            <span className="ml-2 text-sm font-medium text-gray-700">{label}</span>
-            {idx < steps.length - 1 && <div className={`flex-1 h-[2px] ml-3 ${idx < currentStep ? 'bg-purple-600' : 'bg-gray-200'}`}></div>}
-          </div>
-        ))}
-      </div>
+      <h1 className="text-2xl md:text-3xl font-bold mb-6 text-neutral-800 uppercase">
+        Shopping Cart
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <div className="lg:col-span-2 bg-white border rounded-lg p-4">
-          {currentStep === 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-neutral-800">Shipping Information</h2>
-              {['fullName','address','city','postalCode','country'].map((f) => (
-                <div key={f}>
-                  <label className="block text-sm text-gray-600 mb-1 capitalize">{f}</label>
-                  <input
-                    type="text"
-                    className="w-full border rounded-md px-3 py-2"
-                    value={shipping[f]}
-                    onChange={(e) => setShipping({ ...shipping, [f]: e.target.value })}
-                  />
-                  {errors[`shipping.${f}`] && <p className="text-xs text-red-600 mt-1">{errors[`shipping.${f}`]}</p>}
+        {/* Left column: Cart table + Delivery Address */}
+        <div className="lg:col-span-2">
+          {/* Items table */}
+          <div className="bg-white border rounded-lg overflow-hidden">
+            {/* Header row */}
+            <div className="grid grid-cols-12 items-center px-4 py-3 border-b text-gray-700 gap-x-2">
+              <div className="col-span-1"></div>
+              <div className="col-span-4 font-medium">Product</div>
+              <div className="col-span-2 font-medium text-center">Price</div>
+              <div className="col-span-1 font-medium text-center">Qty.</div>
+              <div className="col-span-2 font-medium text-right">Total</div>
+              <div className="col-span-2 font-medium text-center">Action</div>
+            </div>
+
+            {/* Item rows */}
+            <div className="divide-y">
+              {cartItem.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-12 items-center px-4 py-3 gap-x-2"
+                >
+                  <div className="col-span-2 flex items-center">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <div className="text-sm md:text-base font-semibold text-gray-800">
+                      {item.name}
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-center text-gray-800 pr-2">
+                    {item.price}
+                  </div>
+                  <div className="col-span-2">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        aria-label="Decrease quantity"
+                        className="w-7 h-7 rounded-md text-purple-600 flex items-center justify-center text-xs"
+                        onClick={() =>
+                          updateQuantity(cartItem, item.id, "decrease")
+                        }
+                      >
+                        <FaMinus size={12} />
+                      </button>
+                      <input
+                        className="min-w-10 w-14 text-center text-md border border-gray-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateQuantity(
+                            cartItem,
+                            item.id,
+                            "set",
+                            Number(e.target.value)
+                          )
+                        }
+                      />
+                      <button
+                        aria-label="Increase quantity"
+                        className="w-7 h-7 rounded-md text-purple-600 flex items-center justify-center text-xs"
+                        onClick={() =>
+                          updateQuantity(cartItem, item.id, "increase")
+                        }
+                      >
+                        <FaPlus size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-right font-medium">
+                    {((item.price || 0) * (item.quantity || 0)).toFixed(0)}
+                  </div>
+                  <div className="col-span-1 text-center">
+                    <button
+                      aria-label={`Remove ${item.name}`}
+                      className="p-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={() => deleteItem(item.id)}
+                    >
+                      <FaTrash size={12} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
+          </div>
 
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-neutral-800">Billing Information</h2>
-              {['fullName','address','city','postalCode','country'].map((f) => (
-                <div key={f}>
-                  <label className="block text-sm text-gray-600 mb-1 capitalize">{f}</label>
-                  <input
-                    type="text"
-                    className="w-full border rounded-md px-3 py-2"
-                    value={billing[f]}
-                    onChange={(e) => setBilling({ ...billing, [f]: e.target.value })}
-                  />
-                  {errors[`billing.${f}`] && <p className="text-xs text-red-600 mt-1">{errors[`billing.${f}`]}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-neutral-800">Order Review</h2>
-              <ul className="space-y-2">
-                {cartItem.map((item) => (
-                  <li key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-700">{item.name} × {item.quantity}</span>
-                    <span className="font-medium">BDT {((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-neutral-800">Payment</h2>
+          {/* Delivery Address */}
+          <div className="mt-6 bg-white border rounded-lg p-4">
+            <h2 className="text-xl font-bold mb-4 text-neutral-800">
+              Delivery Address
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Method</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  className="w-full border rounded-md px-3 py-2"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex:01xxxxxxxxx"
+                  className="w-full border rounded-md px-3 py-2"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="House no. / Building / Street"
+                className="w-full border rounded-md px-3 py-2"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Division <span className="text-red-500">*</span>
+                </label>
                 <select
                   className="w-full border rounded-md px-3 py-2"
-                  value={payment.method}
-                  onChange={(e) => setPayment({ ...payment, method: e.target.value })}
+                  value={division}
+                  onChange={(e) => setDivision(e.target.value)}
                 >
-                  <option value="card">Credit/Debit Card</option>
-                  <option value="cod">Cash on Delivery</option>
+                  <option value="">Select Division</option>
+                  <option>Dhaka</option>
+                  <option>Chattogram</option>
+                  <option>Rajshahi</option>
+                  <option>Khulna</option>
                 </select>
               </div>
-              {payment.method === 'card' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm text-gray-600 mb-1">Card Number</label>
-                    <input type="text" className="w-full border rounded-md px-3 py-2" value={payment.cardNumber} onChange={(e) => setPayment({ ...payment, cardNumber: e.target.value })} />
-                    {errors['payment.cardNumber'] && <p className="text-xs text-red-600 mt-1">{errors['payment.cardNumber']}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Expiry</label>
-                    <input type="text" className="w-full border rounded-md px-3 py-2" value={payment.expiry} onChange={(e) => setPayment({ ...payment, expiry: e.target.value })} />
-                    {errors['payment.expiry'] && <p className="text-xs text-red-600 mt-1">{errors['payment.expiry']}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">CVV</label>
-                    <input type="text" className="w-full border rounded-md px-3 py-2" value={payment.cvv} onChange={(e) => setPayment({ ...payment, cvv: e.target.value })} />
-                    {errors['payment.cvv'] && <p className="text-xs text-red-600 mt-1">{errors['payment.cvv']}</p>}
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  District <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="w-full border rounded-md px-3 py-2"
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value)}
+                >
+                  <option value="">Select District</option>
+                  <option>Dhaka</option>
+                  <option>Gazipur</option>
+                  <option>Narayanganj</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sub District <span className="text-red-500">*</span>
+                </label>
+                <select
+                  className="w-full border rounded-md px-3 py-2"
+                  value={subDistrict}
+                  onChange={(e) => setSubDistrict(e.target.value)}
+                >
+                  <option value="">Select Sub District</option>
+                  <option>Uttara</option>
+                  <option>Banani</option>
+                  <option>Mirpur</option>
+                </select>
+              </div>
             </div>
-          )}
-
-          {/* Navigation */}
-          <div className="mt-6 flex items-center justify-between">
-            <button
-              className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-              onClick={back}
-              disabled={currentStep === 0}
-            >
-              Back
-            </button>
-            <button
-              className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
-              onClick={next}
-            >
-              {currentStep === steps.length - 1 ? 'Place Order' : 'Next'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                className={`px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 ${
+                  addressType === "home" ? "" : "opacity-70"
+                }`}
+                onClick={() => setAddressType("home")}
+              >
+                <FaHome /> Home{" "}
+                {addressType === "home" && <FaCheck className="ml-1" />}
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 ${
+                  addressType === "office" ? "" : "opacity-70"
+                }`}
+                onClick={() => setAddressType("office")}
+              >
+                <FaBuilding /> Office{" "}
+                {addressType === "office" && <FaCheck className="ml-1" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="bg-white border rounded-lg p-4 h-fit">
-          <h2 className="text-lg font-semibold mb-3 text-neutral-800">Order Summary</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="font-medium">BDT {subtotal.toFixed(2)}</span>
+        {/* Right column: Payment + Summary */}
+        <div className="space-y-6">
+          {/* Payment options */}
+          <div className="bg-white border rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-3 text-neutral-800">
+              Select Payment Method
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center justify-between p-2 rounded">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="pm"
+                    value="cod"
+                    checked={paymentMethod === "cod"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span>Cash on Delivery</span>
+                </span>
+                <FaMoneyBillWave className="text-green-600" />
+              </label>
+              <label className="flex items-center justify-between p-2 rounded">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="pm"
+                    value="bkash"
+                    checked={paymentMethod === "bkash"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span>Bkash</span>
+                </span>
+                <FaMobileAlt className="text-pink-500" />
+              </label>
+              <label className="flex items-center justify-between p-2 rounded">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="pm"
+                    value="nagad"
+                    checked={paymentMethod === "nagad"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span>Nagad</span>
+                </span>
+                <FaMobileAlt className="text-orange-500" />
+              </label>
+              <label className="flex items-center justify-between p-2 rounded">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="pm"
+                    value="upay"
+                    checked={paymentMethod === "upay"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span>Upay</span>
+                </span>
+                <FaMobileAlt className="text-yellow-600" />
+              </label>
+              <label className="flex items-center justify-between p-2 rounded">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="pm"
+                    value="card_mfs"
+                    checked={paymentMethod === "card_mfs"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  />
+                  <span>Card & MFS</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <SiVisa className="text-blue-600" />
+                  <SiMastercard className="text-orange-600" />
+                </span>
+              </label>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Tax (8%)</span>
-              <span className="font-medium">BDT {tax.toFixed(2)}</span>
+          </div>
+
+          {/* Summary */}
+          <div className="bg-white border rounded-lg p-4 h-fit">
+            <h2 className="text-lg font-semibold mb-3 text-neutral-800">
+              Checkout Summary
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="font-medium">৳ {subtotal.toFixed(0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Delivery Charge</span>
+                <span className="font-medium">৳ {deliveryCharge}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Delivery Charge Discount</span>
+                <span className="font-medium">৳ {deliveryDiscount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Discount</span>
+                <span className="font-medium">৳ {discount}</span>
+              </div>
             </div>
-            <div className="border-t pt-2 flex justify-between">
-              <span className="text-gray-800 font-semibold">Total</span>
-              <span className="text-gray-900 font-bold">BDT {total.toFixed(2)}</span>
+
+            {/* Voucher */}
+            <div className="mt-3 flex items-center gap-2">
+              <input
+                className="flex-1 border rounded-md px-3 py-2 text-sm"
+                placeholder="Have a voucher code"
+                value={voucher}
+                onChange={(e) => setVoucher(e.target.value)}
+              />
+              <button
+                className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
+                onClick={applyVoucher}
+              >
+                Apply
+              </button>
             </div>
+
+            <div className="border-t pt-3 mt-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-800 font-semibold">
+                  Total Payable
+                </span>
+                <span className="text-gray-900 font-bold">
+                  ৳ {totalPayable.toFixed(0)}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-3 text-sm">
+              <label className="inline-flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                />
+                <span>
+                  * I agree to the{" "}
+                  <a href="#" className="text-purple-600 underline">
+                    terms and conditions
+                  </a>
+                </span>
+              </label>
+            </div>
+
+            <button
+              className="mt-4 w-full px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
+              disabled={!accepted}
+            >
+              Confirm Order
+            </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Checkout
+export default Checkout;
