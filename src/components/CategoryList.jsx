@@ -3,16 +3,14 @@ import React from 'react';
 import { MdApps } from 'react-icons/md';
 
 const categories = [
-    "Smart Watches",
-    "Smart Phones",
-    "Headphones",
-    "Smart TV & Accessories",
-    "Computer & Accessories",
-    "Wireless Speakers",
-    "Smart Home Appliances",
-    "Charger & Cables",
-    "Powerbanks",
-    "Health & Outdoors"
+    { name: "Smart Watches", icon: "⌚" },
+    { name: "Smart Phones", icon: "📱" },
+    { name: "Headphones", icon: "🎧" },
+    { name: "Mobile Accessories", icon: "💻" },
+    { name: "Wireless Speakers", icon: "🔊" },
+    { name: "Smart Home Appliances", icon: "🏠" },
+    { name: "Charger & Cables", icon: "🔌" },
+    { name: "Powerbanks", icon: "🔋" },
 ];
 
 const CategoryList = () => (
@@ -24,10 +22,11 @@ const CategoryList = () => (
         <ul>
             {categories.map(cat => (
                 <li
-                    key={cat}
-                    className="px-4 py-2 hover:bg-purple-100 cursor-pointer text-base"
+                    key={cat.name}
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-purple-100 cursor-pointer text-base"
                 >
-                    {cat}
+                    <span className="text-lg">{cat.icon}</span>
+                    {cat.name}
                 </li>
             ))}
             <li>
