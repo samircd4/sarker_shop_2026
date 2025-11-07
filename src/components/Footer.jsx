@@ -8,7 +8,7 @@ const Footer = () => {
     return (
         <>
             <footer className="bg-[#1a202c] text-gray-300 pt-10 pb-0 relative hidden md:block">
-                <div className="max-w-6xl mx-auto px-6">
+                <div className="max-w-auto mx-auto px-6">
                     <div className="grid grid-cols-4 gap-8 pb-8">
                         {/* Brand & Contact */}
                         <div>
@@ -16,9 +16,9 @@ const Footer = () => {
                                 <span className="text-purple-600">Sarker</span>
                                 <span className="text-white"> Shop</span>
                             </h2>
-                            <p>123 Electronics St, Style City,<br />NY 10001</p>
-                            <p className="mt-2">Email:<br />support@zaptro.com</p>
-                            <p>Phone: (123) 456-7890</p>
+                            <p>Botrish, Kishoreganj<br />Dhaka</p>
+                            <p className="mt-2">Email:<br />support@sarker.shop</p>
+                            <p>Phone: +01781 355 377</p>
                         </div>
                         {/* Customer Service */}
                         <div>
@@ -42,7 +42,7 @@ const Footer = () => {
                         <div>
                             <h3 className="text-xl font-bold text-white mb-2">Stay in the Loop</h3>
                             <p className="mb-3">Get special offers and more.</p>
-                            <form className="flex">
+                            <form className="flex border-2 border-purple-500 rounded-md overflow-hidden">
                                 <input
                                     type="email"
                                     placeholder="Your email"
