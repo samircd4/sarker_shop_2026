@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Product from '../components/Product'
-import productsData from '../data/products.json'
 import { MdDevices, MdSettings, MdHome, MdWork, MdApps, MdFilterList } from 'react-icons/md'
+import axios from 'axios'
+
+
+const API_URL = import.meta.env.VITE_API_URL
+
+
 
 const Products = () => {
+    const [products, setProducts] = useState([])
     const [filteredProducts, setFilteredProducts] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [loading, setLoading] = useState(true)
@@ -13,11 +19,10 @@ const Products = () => {
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
     const [showCategoryPanel, setShowCategoryPanel] = useState(false)
     const [categoryAnimationClass, setCategoryAnimationClass] = useState('')
-    const prices = productsData.map(p => p.price)
-    const globalMin = Math.floor(Math.min(...prices))
-    const globalMax = Math.ceil(Math.max(...prices))
-    const [priceMin, setPriceMin] = useState(globalMin)
-    const [priceMax, setPriceMax] = useState(globalMax)
+    const [priceMin, setPriceMin] = useState(0)
+    const [priceMax, setPriceMax] = useState(0)
+    const [globalMin, setGlobalMin] = useState(0)
+    const [globalMax, setGlobalMax] = useState(0)
     const [minRating, setMinRating] = useState(0)
     const [featuredOnly, setFeaturedOnly] = useState(false)
     const [selectedBrands, setSelectedBrands] = useState([])
@@ -25,15 +30,43 @@ const Products = () => {
     const isDragging = useRef(false)
     const startX = useRef(0)
     const scrollStart = useRef(0)
+    const [categories, setCategories] = useState(['All'])
 
-    // Get unique categories
-    const getUniqueCategories = (products) => {
-        const categories = products.map(product => product.category)
-        return ['All', ...new Set(categories)]
+    const getCategoryName = (p) => {
+        if (!p) return ''
+        const c = p.category
+        return typeof c === 'string' ? c : (c?.name || '')
     }
 
-    const categories = getUniqueCategories(productsData)
-    const brands = Array.from(new Set(productsData.map(p => p.brand).filter(Boolean)))
+    
+
+    useEffect(() => {
+        axios.get(`${API_URL}/products/`).then(response => {
+            const list = Array.isArray(response.data) ? response.data : []
+            setProducts(list)
+            setFilteredProducts(list)
+        }).catch(error => {
+            console.error(error)
+        })
+    }, [])
+
+
+    useEffect(() => {
+        axios.get(`${API_URL}/categories/`).then(response => {
+            const uniqueCategories = ['All', ...new Set((Array.isArray(response.data) ? response.data : []).map(c => c.name))]
+            setCategories(uniqueCategories)
+        }).catch(error => {
+            console.error('API Error:', error)
+            // Fallback to local data if API fails
+            const localCategories = ['All', ...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
+            setCategories(localCategories)
+        })
+    }, [products])
+
+
+    
+    
+    const brands = Array.from(new Set(products.map(p => p.brand).filter(Boolean)))
 
     const categoryIconMap = {
         Electronics: MdDevices,
@@ -45,7 +78,7 @@ const Products = () => {
 
     const getCategoryImage = (category) => {
         if (category === 'All') return null
-        const item = productsData.find(p => p.category === category)
+        const item = products.find(p => getCategoryName(p) === category)
         return item?.image || null
     }
 
@@ -54,9 +87,20 @@ const Products = () => {
         const timer = setTimeout(() => {
             setLoading(false)
         }, 500)
-
         return () => clearTimeout(timer)
     }, [])
+
+    useEffect(() => {
+        if (products.length > 0) {
+            const prices = products.map(p => Number(p.price) || 0)
+            const gMin = Math.floor(Math.min(...prices))
+            const gMax = Math.ceil(Math.max(...prices))
+            setGlobalMin(gMin)
+            setGlobalMax(gMax)
+            setPriceMin(gMin)
+            setPriceMax(gMax)
+        }
+    }, [products])
 
     // Handle right-side category panel mount/unmount with slide animations
     useEffect(() => {
@@ -84,11 +128,14 @@ const Products = () => {
 
     useEffect(() => {
         let base = selectedCategory === 'All'
-            ? productsData
-            : productsData.filter(product => product.category === selectedCategory)
+            ? products
+            : products.filter(product => getCategoryName(product) === selectedCategory)
 
         // Apply price range
-        base = base.filter(p => p.price >= priceMin && p.price <= priceMax)
+        base = base.filter(p => {
+            const price = Number(p.price) || 0
+            return price >= priceMin && price <= priceMax
+        })
 
         // Apply rating
         base = base.filter(p => (p.rating ?? 0) >= minRating)
@@ -104,7 +151,7 @@ const Products = () => {
         }
 
         setFilteredProducts(base)
-    }, [selectedCategory, priceMin, priceMax, minRating, featuredOnly, selectedBrands])
+    }, [selectedCategory, priceMin, priceMax, minRating, featuredOnly, selectedBrands, products])
 
     const onPointerDown = (e) => {
         const container = carouselRef.current
@@ -135,6 +182,11 @@ const Products = () => {
             </div>
         )
     }
+
+   
+
+
+   
 
     return (
         <div className="w-[95%] sm:w-[90%] max-w-6xl mx-auto">
