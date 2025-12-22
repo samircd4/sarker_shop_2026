@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCaretDown } from 'react-icons/fa'
+import { FaCaretDown, FaUser } from 'react-icons/fa'
 import { IoCartOutline } from 'react-icons/io5'
 import { Link, NavLink } from 'react-router-dom'
 import { FiMenu } from 'react-icons/fi';
@@ -78,7 +78,9 @@ const Navbar = () => {
                             <IoCartOutline className='h-7 w-7' />
                             <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
                         </button>
-                        
+                        <Link to="/account" className='text-neutral-900 hover:text-purple-600 transition-colors' aria-label="Account">
+                            <FaUser className='h-6 w-6' />
+                        </Link>
                     </nav>
                 </div>
             </div>
@@ -88,15 +90,38 @@ const Navbar = () => {
             {showDrawer && (
                 <div className="fixed inset-0 z-50 flex" onClick={() => setDrawerOpen(false)}>
                     {/* Drawer */}
-                    <div className={`relative bg-white w-64 h-full shadow-lg z-50 ${animationClass}`} onClick={(e) => e.stopPropagation()}>
+                    <div className={`relative bg-white w-64 h-full shadow-lg z-50 ${animationClass} flex flex-col`} onClick={(e) => e.stopPropagation()}>
                         <button
-                            className="absolute top-3 right-3 text-2xl"
+                            className="absolute top-3 right-3 text-2xl z-10"
                             onClick={() => setDrawerOpen(false)}
                             aria-label="Close categories"
                         >
                             &times;
                         </button>
-                        <CategoryList />
+
+                        <div className="p-4 border-b">
+                            <h2 className="text-xl font-bold text-purple-600 mb-4">Menu</h2>
+                            <ul className="space-y-3">
+                                <li>
+                                    <Link to="/" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>Home</Link>
+                                </li>
+                                <li>
+                                    <Link to="/products" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>Products</Link>
+                                </li>
+                                <li>
+                                    <Link to="/about" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>About</Link>
+                                </li>
+                                <li>
+                                    <Link to="/account" className="block text-gray-700 hover:text-purple-600 font-medium flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+                                        <FaUser /> Account
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto">
+                            <CategoryList />
+                        </div>
                     </div>
                 </div>
             )}
