@@ -32,13 +32,13 @@ const Tabs = ({ product }) => {
             </div>
             <div className="mt-6">
                 {activeTab === "spacification" && (
-                    <Spacification product={product} />
+                    <Spacification specifications={product.specifications || []} />
                 )}
                 {activeTab === "description" && (
                     <div className="text-gray-700">{product.description || "No description available."}</div>
                 )}
                 {activeTab === "reviews" && (
-                    <div className="text-gray-700">{product.reviews ? `${product.reviews} reviews` : "No reviews yet."}</div>
+                    <div className="text-gray-700">{product.reviews_count ? `${product.reviews_count} reviews` : "No reviews yet."}</div>
                 )}
             </div>
         </div>
@@ -71,14 +71,14 @@ const ProductDetails = () => {
     const PLACEHOLDER_IMAGE = "https://via.placeholder.com/800x800?text=Image+Unavailable";
     const PRICE_COLOR_HEX = "#7e22ce";
 
-    // Build images from backend shape: image + additional_images[].image
+    // Build images from backend shape: image + gallery_images[].image
     const images = useMemo(() => {
         if (!product) return [PLACEHOLDER_IMAGE];
         const main = product.image;
-        const extras = Array.isArray(product.additional_images)
-            ? product.additional_images
-                  .map((i) => i && i.image)
-                  .filter(Boolean)
+        const extras = Array.isArray(product.gallery_images)
+            ? product.gallery_images
+                .map((i) => i && i.image)
+                .filter(Boolean)
             : [];
         const result = [];
         if (main) result.push(main);
@@ -93,14 +93,15 @@ const ProductDetails = () => {
         description = "No description available.",
         rating = 0,
         reviews_count = 0,
-        stock = 0,
-        brand = "Unknown Brand",
-        specifications = {},
-        videoUrl,
+        stock_quantity = 0,
+        brand: brandObj,
+        specifications = [], // It's an array of objects {key, value} now
+        variants = [],
     } = product || {};
 
+    const brand = brandObj?.name || "Unknown Brand";
     const reviews = typeof reviews_count === "number" ? reviews_count : 0;
-    const stockStatus = Number(stock) > 0 ? "in_stock" : "out_of_stock";
+    const stockStatus = Number(stock_quantity) > 0 ? "in_stock" : "out_of_stock";
 
     const filledStars = Math.round(rating);
     const handleImageError = (e) => {
@@ -228,7 +229,7 @@ const ProductDetails = () => {
         }
     };
 
-    
+
 
     const onTouchStart = (e) => setTouchStart(e.targetTouches[0].clientX);
     const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
@@ -278,20 +279,18 @@ const ProductDetails = () => {
                                 <img
                                     src={images[prevIndex]}
                                     alt=""
-                                    className={`absolute inset-0 w-full h-full object-cover ${
-                                        direction === "right" ? "gallery-exit-left" : "gallery-exit-right"
-                                    }`}
+                                    className={`absolute inset-0 w-full h-full object-cover ${direction === "right" ? "gallery-exit-left" : "gallery-exit-right"
+                                        }`}
                                     onError={handleImageError}
                                 />
                             )}
                             <img
                                 src={images[activeIndex]}
                                 alt={name}
-                                className={`absolute inset-0 w-full h-full object-cover ${
-                                    isAnimating
-                                        ? direction === "right" ? "gallery-enter-right" : "gallery-enter-left"
-                                        : "gallery-transition opacity-100"
-                                }`}
+                                className={`absolute inset-0 w-full h-full object-cover ${isAnimating
+                                    ? direction === "right" ? "gallery-enter-right" : "gallery-enter-left"
+                                    : "gallery-transition opacity-100"
+                                    }`}
                                 onError={handleImageError}
                             />
                             {!isNextLoaded && (
@@ -341,7 +340,7 @@ const ProductDetails = () => {
                     </div>
                     <div className="border-t my-6" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        {/* <div>
                             <div className="text-sm text-gray-600 mb-2">Available Size</div>
                             <div className="flex gap-2">
                                 {["S", "M", "L"].map((s) => (
@@ -355,8 +354,8 @@ const ProductDetails = () => {
                                     </button>
                                 ))}
                             </div>
-                        </div>
-                        <div>
+                        </div> */}
+                        {/* <div>
                             <div className="text-sm text-gray-600 mb-2">Available Color</div>
                             <div className="flex items-center gap-4">
                                 {[{k:"black", hex:"#111827"}, {k:"gray", hex:"#9CA3AF"}].map((c) => (
@@ -377,10 +376,10 @@ const ProductDetails = () => {
                                     </label>
                                 ))}
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <div className="border-t my-6" />
-                    <div className="text-sm text-gray-700">{product.quantityAvailable ? `Last ${product.quantityAvailable} left — make it yours!` : "Limited stock — make it yours!"}</div>
+                    <div className="text-sm text-gray-700">{stockStatus === "in_stock" ? `In Stock (${product.stock_quantity} available) — make it yours!` : "Currently unavailable"}</div>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                         <div className="inline-flex items-center border rounded-md">
                             <button aria-label="Decrease quantity" onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 ring-purple-700">−</button>
@@ -398,7 +397,7 @@ const ProductDetails = () => {
                 </div>
             </div>
 
-            <Tabs product={{ name, description, rating, reviews, specifications, videoUrl }} />
+            <Tabs product={{ name, description, rating, reviews, specifications }} />
 
             {zoomOpen && (
                 <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={() => setZoomOpen(false)}>

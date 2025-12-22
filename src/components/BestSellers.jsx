@@ -1,26 +1,54 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import productsData from "../data/products.json";
 import Product from "./Product";
 
+const API_URL = import.meta.env.VITE_API_URL
+
 const BestSellers = () => {
-  const [bestSellers, setBestSellers] = useState([]);
+    const [bestSellers, setBestSellers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Filter products based on high ratings and review counts to identify best sellers
-    const filtered = productsData
-      .filter((product) => product.rating >= 4.5 && product.reviews >= 150)
-      .sort((a, b) => b.reviews - a.reviews) // Sort by review count descending
-      .slice(0, 5); // Take top 5 best sellers
-    setBestSellers(filtered);
-  }, []);
+    useEffect(() => {
+        const fetchBestSellers = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/products/bestsellers/`);
+                const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
+                setBestSellers(data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching best sellers:", error);
+                // Fallback to local data
+                const filtered = productsData
+                    .filter((product) => product.rating >= 4.5 && product.reviews >= 150)
+                    .sort((a, b) => b.reviews - a.reviews)
+                    .slice(0, 5)
+                    .map(p => ({ ...p, reviews_count: p.reviews }));
+                setBestSellers(filtered);
+                setLoading(false);
+            }
+        };
 
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-      {bestSellers.map((product) => (
-        <Product key={product.id} product={product} />
-      ))}
-    </div>
-  );
+        fetchBestSellers();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-lg shadow-lg h-80 animate-pulse"></div>
+                ))}
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {bestSellers.map((product) => (
+                <Product key={product.id} product={product} />
+            ))}
+        </div>
+    );
 };
 
 export default BestSellers;

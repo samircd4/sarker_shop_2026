@@ -1,14 +1,17 @@
 import React from 'react';
 
-const Spacification = ({ product }) => {
-    const specs = [
-        { label: 'Brand', value: 'Sarker Shop' },
-        { label: 'Model', value: '2026 Edition' },
-        { label: 'Material', value: 'Premium Cotton Blend' },
-        { label: 'Size', value: 'S, M, L, XL, XXL' },
-        { label: 'Color', value: 'Navy Blue, Charcoal, Olive' },
-        { label: 'Care', value: 'Machine wash cold, tumble dry low' },
-    ];
+const Spacification = ({ specifications }) => {
+    // If no real specifications are passed, fallback to some defaults or show empty
+    const specs = (specifications && specifications.length > 0)
+        ? specifications.map(s => ({ label: s.key, value: s.value }))
+        : [
+            { label: 'Brand', value: 'Sarker Shop' },
+            { label: 'Model', value: '2026 Edition' },
+            { label: 'Material', value: 'Premium Cotton Blend' },
+            { label: 'Size', value: 'S, M, L, XL, XXL' },
+            { label: 'Color', value: 'Navy Blue, Charcoal, Olive' },
+            { label: 'Care', value: 'Machine wash cold, tumble dry low' },
+        ];
 
     return (
         <div className="max-w-3xl mx-auto p-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-xl">

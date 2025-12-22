@@ -5,35 +5,34 @@ import Product from "./Product";
 
 const API_URL = import.meta.env.VITE_API_URL
 
-const FeaturedProducts = () => {
-    const [featured, setFeatured] = useState([]);
+const Products = () => {
+    const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchFeatured = async () => {
+        const fetchProducts = async () => {
             try {
-                const response = await axios.get(`${API_URL}/products/featured/`);
+                const response = await axios.get(`${API_URL}/products/`);
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-                setFeatured(data);
+                // Limit to first 10 or 20 if needed, but for now show what API returns (usually paginated)
+                setProducts(data);
                 setLoading(false);
             } catch (error) {
-                console.error("Error fetching featured products:", error);
+                console.error("Error fetching products:", error);
                 // Fallback to local data
-                const filtered = productsData
-                    .filter((product) => product.is_featured)
-                    .map(p => ({ ...p, reviews_count: p.reviews }));
-                setFeatured(filtered);
+                const mapped = productsData.map(p => ({ ...p, reviews_count: p.reviews }));
+                setProducts(mapped);
                 setLoading(false);
             }
         };
 
-        fetchFeatured();
+        fetchProducts();
     }, []);
 
     if (loading) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(10)].map((_, i) => (
                     <div key={i} className="bg-white rounded-lg shadow-lg h-80 animate-pulse"></div>
                 ))}
             </div>
@@ -42,11 +41,11 @@ const FeaturedProducts = () => {
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {featured.map((product) => (
+            {products.map((product) => (
                 <Product key={product.id} product={product} />
             ))}
         </div>
     );
 };
 
-export default FeaturedProducts;
+export default Products;

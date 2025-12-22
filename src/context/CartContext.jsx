@@ -1,10 +1,24 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const CartContext = createContext(null)
 
 export const CartProvider = ({ children }) => {
-    const [cartItem, setCartItem] = useState([])
+    // Initialize cart from localStorage
+    const [cartItem, setCartItem] = useState(() => {
+        try {
+            const savedCart = localStorage.getItem("cartItems");
+            return savedCart ? JSON.parse(savedCart) : [];
+        } catch (error) {
+            console.error("Error parsing cart from localStorage:", error);
+            return [];
+        }
+    });
+
+    // Save to localStorage whenever cartItem changes
+    useEffect(() => {
+        localStorage.setItem("cartItems", JSON.stringify(cartItem));
+    }, [cartItem]);
 
     const addToCart = (product) => {
         const itemInCart = cartItem.find((item) => item.id === product.id)

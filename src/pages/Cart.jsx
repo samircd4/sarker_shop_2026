@@ -7,7 +7,7 @@ const Cart = () => {
   const navigate = useNavigate()
 
   const subtotal = cartItem.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0)
-  const taxRate = 0.08
+  const taxRate = 0.0
   const tax = subtotal * taxRate
   const total = subtotal + tax
 
@@ -76,7 +76,7 @@ const Cart = () => {
                 <span className="font-medium">BDT {subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax (8%)</span>
+                <span className="text-gray-600">Tax ({(taxRate * 100).toFixed(0)}%)</span>
                 <span className="font-medium">BDT {tax.toFixed(2)}</span>
               </div>
               <div className="border-t pt-2 flex justify-between">

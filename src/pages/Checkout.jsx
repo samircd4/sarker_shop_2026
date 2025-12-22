@@ -46,7 +46,7 @@ const Checkout = () => {
             0
         );
     }, [cartItem]);
-    const deliveryCharge = 0;
+    const deliveryCharge = 70;
     const deliveryDiscount = 0;
     const totalPayable = Math.max(
         0,

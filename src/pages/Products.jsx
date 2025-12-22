@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Product from '../components/Product'
 import { MdDevices, MdSettings, MdHome, MdWork, MdApps, MdFilterList } from 'react-icons/md'
 import axios from 'axios'
+import localProducts from '../data/products.json'
 
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -20,7 +21,7 @@ const Products = () => {
     const [showCategoryPanel, setShowCategoryPanel] = useState(false)
     const [categoryAnimationClass, setCategoryAnimationClass] = useState('')
     const [priceMin, setPriceMin] = useState(0)
-    const [priceMax, setPriceMax] = useState(0)
+    const [priceMax, setPriceMax] = useState(1000000)
     const [globalMin, setGlobalMin] = useState(0)
     const [globalMax, setGlobalMax] = useState(0)
     const [minRating, setMinRating] = useState(0)
@@ -30,7 +31,9 @@ const Products = () => {
     const isDragging = useRef(false)
     const startX = useRef(0)
     const scrollStart = useRef(0)
-    const [categories, setCategories] = useState(['All'])
+    const animationFrameId = useRef(null)
+    const isUserInteracting = useRef(false)
+    const [categories, setCategories] = useState([{ name: 'All', logo: null }])
 
     const getCategoryName = (p) => {
         if (!p) return ''
@@ -38,35 +41,92 @@ const Products = () => {
         return typeof c === 'string' ? c : (c?.name || '')
     }
 
-    
+    const getBrandName = (p) => {
+        if (!p) return ''
+        const b = p.brand
+        return typeof b === 'string' ? b : (b?.name || '')
+    }
+
+    // Auto-scroll effect
+    useEffect(() => {
+        const container = carouselRef.current
+        if (!container) return
+
+        const animate = () => {
+            if (!isUserInteracting.current && !isDragging.current) {
+                if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 1) {
+                    container.scrollLeft = 0
+                } else {
+                    container.scrollLeft += 0.5 // Very slow scroll speed
+                }
+            }
+            animationFrameId.current = requestAnimationFrame(animate)
+        }
+
+        animationFrameId.current = requestAnimationFrame(animate)
+
+        return () => {
+            if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current)
+        }
+    }, [loading])
 
     useEffect(() => {
+        // Helpful debug log
+        console.log('API_URL', API_URL)
+
         axios.get(`${API_URL}/products/`).then(response => {
-            const list = Array.isArray(response.data) ? response.data : []
+            let list = []
+            if (Array.isArray(response.data)) {
+                list = response.data
+            } else if (response.data && Array.isArray(response.data.results)) {
+                list = response.data.results
+            }
             setProducts(list)
+            console.log('Products:', list)
             setFilteredProducts(list)
         }).catch(error => {
-            console.error(error)
+            console.error('Products API error:', error)
+            // Fallback to bundled local data so UI still shows products during development
+            if (Array.isArray(localProducts) && localProducts.length > 0) {
+                const mapped = localProducts.map(p => ({ ...p, reviews_count: p.reviews }))
+                setProducts(mapped)
+                setFilteredProducts(mapped)
+            }
+            setLoading(false)
         })
     }, [])
 
 
     useEffect(() => {
         axios.get(`${API_URL}/categories/`).then(response => {
-            const uniqueCategories = ['All', ...new Set((Array.isArray(response.data) ? response.data : []).map(c => c.name))]
-            setCategories(uniqueCategories)
+            const data = Array.isArray(response.data) ? response.data : (response.data?.results || [])
+            // Map API data to our structure
+            const apiCategories = data.map(c => ({
+                name: c.name,
+                logo: c.logo,
+                id: c.id,
+                slug: c.slug
+            }))
+
+            // Filter duplicates by name
+            const uniqueApiCategories = apiCategories.filter((c, index, self) =>
+                index === self.findIndex((t) => t.name === c.name)
+            )
+
+            setCategories([{ name: 'All', logo: null }, ...uniqueApiCategories])
         }).catch(error => {
             console.error('API Error:', error)
             // Fallback to local data if API fails
-            const localCategories = ['All', ...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
-            setCategories(localCategories)
+            const localNames = [...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
+            const localCats = localNames.map(name => ({ name, logo: null }))
+            setCategories([{ name: 'All', logo: null }, ...localCats])
         })
     }, [products])
 
 
-    
-    
-    const brands = Array.from(new Set(products.map(p => p.brand).filter(Boolean)))
+
+
+    const brands = Array.from(new Set(products.map(p => getBrandName(p)).filter(Boolean)))
 
     const categoryIconMap = {
         Electronics: MdDevices,
@@ -147,7 +207,7 @@ const Products = () => {
 
         // Apply brand if available
         if (selectedBrands.length > 0) {
-            base = base.filter(p => selectedBrands.includes(p.brand))
+            base = base.filter(p => selectedBrands.includes(getBrandName(p)))
         }
 
         setFilteredProducts(base)
@@ -183,10 +243,11 @@ const Products = () => {
         )
     }
 
-   
 
 
-   
+
+
+
 
     return (
         <div className="w-[95%] sm:w-[90%] max-w-6xl mx-auto">
@@ -217,44 +278,62 @@ const Products = () => {
                 <div className="mb-6">
                     <div
                         ref={carouselRef}
-                        onMouseDown={onPointerDown}
+                        onMouseDown={(e) => {
+                            // Mouse down doesn't need to change interaction state as MouseEnter already set it
+                            onPointerDown(e)
+                        }}
                         onMouseMove={onPointerMove}
-                        onMouseUp={onPointerUp}
-                        onMouseLeave={onPointerUp}
-                        onTouchStart={onPointerDown}
+                        onMouseUp={(e) => {
+                            // Mouse up doesn't resume; MouseLeave will resume
+                            onPointerUp()
+                        }}
+                        onMouseEnter={() => { isUserInteracting.current = true }}
+                        onMouseLeave={() => {
+                            isUserInteracting.current = false
+                            onPointerUp()
+                        }}
+                        onTouchStart={(e) => {
+                            isUserInteracting.current = true
+                            onPointerDown(e)
+                        }}
                         onTouchMove={onPointerMove}
-                        onTouchEnd={onPointerUp}
-                        className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-1 select-none cursor-grab active:cursor-grabbing"
-                        style={{ scrollBehavior: 'smooth' }}
+                        onTouchEnd={() => {
+                            isUserInteracting.current = false
+                            onPointerUp()
+                        }}
+                        className="flex gap-3 overflow-x-auto no-scrollbar px-1 select-none cursor-grab active:cursor-grabbing"
+                        style={{ scrollBehavior: 'auto' }} // Changed to auto for smooth JS scrolling
                     >
                         {categories.map((category) => {
-                            const Icon = categoryIconMap[category] || MdApps
-                            const imageSrc = getCategoryImage(category)
-                            const isActive = selectedCategory === category
+                            const catName = category.name
+                            const Icon = categoryIconMap[catName] || MdApps
+                            const imageSrc = category.logo || getCategoryImage(catName)
+
+                            const isActive = selectedCategory === catName
                             const handleClick = (e) => {
                                 if (isDragging.current) {
                                     e.preventDefault()
                                     return
                                 }
-                                setSelectedCategory(category)
+                                setSelectedCategory(catName)
                             }
                             return (
                                 <button
-                                    key={category}
+                                    key={category.id || catName}
                                     onClick={handleClick}
                                     className={`snap-start shrink-0 flex flex-col items-center justify-start group ${isActive ? 'text-purple-700' : 'text-gray-800'}`}
                                     style={{ width: '104px' }}
                                 >
-                                    <div className={`w-full h-24 rounded-md overflow-hidden border-2 ${isActive ? 'border-purple-500 shadow-md' : 'border-gray-200'} bg-white`}>                                            
+                                    <div className={`w-full h-24 rounded-md overflow-hidden border-2 ${isActive ? 'border-purple-500 shadow-md' : 'border-gray-200'} bg-white`}>
                                         {imageSrc ? (
-                                            <img src={imageSrc} alt={category} className="h-full w-full object-cover" />
+                                            <img src={imageSrc} alt={catName} className="h-full w-full object-cover" />
                                         ) : (
                                             <div className="h-full w-full bg-gray-100 flex items-center justify-center">
                                                 <Icon className="h-7 w-7 text-gray-500" />
                                             </div>
                                         )}
                                     </div>
-                                    <span className="mt-2 text-xs sm:text-sm text-center line-clamp-1">{category}</span>
+                                    <span className="mt-2 text-xs sm:text-sm text-center line-clamp-1">{catName}</span>
                                 </button>
                             )
                         })}
@@ -410,19 +489,20 @@ const Products = () => {
                             <div className="p-3 overflow-y-auto h-[calc(100%-56px)]">
                                 <ul className="space-y-1">
                                     {categories.map((cat) => {
-                                        const isActive = selectedCategory === cat
+                                        const catName = cat.name
+                                        const isActive = selectedCategory === catName
                                         return (
-                                            <li key={cat}>
+                                            <li key={cat.id || catName}>
                                                 <button
                                                     onClick={() => {
-                                                        setSelectedCategory(cat)
+                                                        setSelectedCategory(catName)
                                                         setIsCategoryOpen(false)
                                                     }}
                                                     className={`w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}`}
                                                 >
                                                     <span className="inline-flex items-center gap-2">
-                                                        {(categoryIconMap[cat] || MdApps)({ className: 'w-4 h-4 text-purple-600' })}
-                                                        {cat}
+                                                        {(categoryIconMap[catName] || MdApps)({ className: 'w-4 h-4 text-purple-600' })}
+                                                        {catName}
                                                     </span>
                                                 </button>
                                             </li>
