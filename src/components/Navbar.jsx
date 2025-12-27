@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCaretDown, FaUser } from 'react-icons/fa'
 import { IoCartOutline } from 'react-icons/io5'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { FiMenu } from 'react-icons/fi';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
@@ -15,7 +15,18 @@ const Navbar = () => {
     const [searchFocused, setSearchFocused] = useState(false); // NEW
     const [cartOpen, setCartOpen] = useState(false);
     const { cartItem } = useCart();
+    const navigate = useNavigate();
     const totalCount = cartItem.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+    const handleUserClick = (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            navigate('/dashboard');
+        } else {
+            navigate('/account');
+        }
+    };
 
     useEffect(() => {
         if (drawerOpen) {
@@ -78,9 +89,9 @@ const Navbar = () => {
                             <IoCartOutline className='h-7 w-7' />
                             <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
                         </button>
-                        <Link to="/account" className='text-neutral-900 hover:text-purple-600 transition-colors' aria-label="Account">
+                        <button onClick={handleUserClick} className='text-neutral-900 hover:text-purple-600 transition-colors' aria-label="Account">
                             <FaUser className='h-6 w-6' />
-                        </Link>
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -112,7 +123,7 @@ const Navbar = () => {
                                     <Link to="/about" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>About</Link>
                                 </li>
                                 <li>
-                                    <Link to="/account" className="block text-gray-700 hover:text-purple-600 font-medium flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+                                    <Link to="/account" className="text-gray-700 hover:text-purple-600 font-medium flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
                                         <FaUser /> Account
                                     </Link>
                                 </li>

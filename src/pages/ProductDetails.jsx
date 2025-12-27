@@ -5,6 +5,7 @@ import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useCart } from "../context/CartContext.jsx";
 import axios from "axios";
 import Spacification from "../components/Spacification.jsx";
+import CopyableText from "../components/CopyableText.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -355,28 +356,9 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                         </div> */}
-                        {/* <div>
-                            <div className="text-sm text-gray-600 mb-2">Available Color</div>
-                            <div className="flex items-center gap-4">
-                                {[{k:"black", hex:"#111827"}, {k:"gray", hex:"#9CA3AF"}].map((c) => (
-                                    <label key={c.k} className="inline-flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="color"
-                                            value={c.k}
-                                            checked={selectedColor === c.k}
-                                            onChange={() => setSelectedColor(c.k)}
-                                            className="sr-only"
-                                        />
-                                        <span
-                                            className={`w-6 h-6 rounded-full border-2 ${selectedColor === c.k ? "border-purple-700" : "border-gray-300"}`}
-                                            style={{ backgroundColor: c.hex }}
-                                            aria-label={c.k}
-                                        />
-                                    </label>
-                                ))}
-                            </div>
-                        </div> */}
+                        <div className="mt-4">
+                            <p className="text-gray-700 leading-relaxed">{product.short_description || description}</p>
+                        </div>
                     </div>
                     <div className="border-t my-6" />
                     <div className="text-sm text-gray-700">{stockStatus === "in_stock" ? `In Stock (${product.stock_quantity} available) — make it yours!` : "Currently unavailable"}</div>
@@ -388,9 +370,32 @@ const ProductDetails = () => {
                         </div>
                         <button onClick={handleAddToCart} className="px-5 py-3 rounded-md bg-purple-700 hover:bg-purple-800 text-white focus-visible:outline-none focus-visible:ring-2 ring-purple-700" disabled={stockStatus !== "in_stock"}>Add to cart</button>
                     </div>
-                    {brand && (
-                        <div className="mt-6 text-sm text-gray-600">Brand: {brand}</div>
-                    )}
+                    
+                    {/* ####################################################### */}
+                    
+                    <div className="">
+
+                        {brand && (
+                            <div className="mt-6 text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
+                                <span className="font-semibold text-purple-700">Brand:</span>
+                                <span className="ml-2 text-purple-800 font-medium">{brand}</span>
+                            </div>
+                        )}
+
+                        <div className="mt-6 flex gap-8 items-center text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
+                            <span className="font-semibold text-purple-700">PRODUCT_ID:</span>
+                            <CopyableText className="ml-2 text-purple-800 font-medium" value={product?.product_id || "N/A"}/>
+                        </div>
+                        <div className="mt-6 flex gap-8 items-center text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
+                            <span className="font-semibold text-purple-700">SKU:</span>
+                            <CopyableText className="ml-2 text-purple-800 font-medium" value={product?.sku || "N/A"}/>
+                        </div>
+                        
+
+                    </div>
+
+
+
                     <div className="mt-6">
                         <Link to="/products" className="px-5 py-3 inline-block rounded-md border border-gray-300 text-gray-700 hover:border-purple-700 focus-visible:outline-none focus-visible:ring-2 ring-purple-700">Back to Products</Link>
                     </div>

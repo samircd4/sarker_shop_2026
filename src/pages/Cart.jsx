@@ -45,7 +45,7 @@ const Cart = () => {
                     <button
                       aria-label="Decrease quantity"
                       className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                      onClick={() => updateQuantity(cartItem, item.id, 'decrease')}
+                      onClick={() => updateQuantity(item.id, 'decrease')}
                     >
                       -
                     </button>
@@ -53,7 +53,7 @@ const Cart = () => {
                     <button
                       aria-label="Increase quantity"
                       className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                      onClick={() => updateQuantity(cartItem, item.id, 'increase')}
+                      onClick={() => updateQuantity(item.id, 'increase')}
                     >
                       +
                     </button>

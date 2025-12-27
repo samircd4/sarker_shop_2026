@@ -1,11 +1,81 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaGoogle, FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from 'axios';
+import { useCart } from '../context/CartContext.jsx';
+import { toast } from 'react-toastify';
+import api from '../api/client';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Account = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { syncLocalCartToServer } = useCart();
+
+    // Form states
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const toggleMode = () => setIsLogin(!isLogin);
+
+    // Redirect authenticated users away from Account page
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        api.get('/customers/me/').then(() => {
+            navigate('/dashboard');
+        }).catch(() => {
+            // stay on account page if token invalid/expired
+        });
+    }, [navigate]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            if (isLogin) {
+                // Login Logic
+                const response = await axios.post(`${API_URL}/auth/login/`, {
+                    email,
+                    password
+                });
+
+                // Assuming backend returns access/refresh tokens
+                localStorage.setItem('access_token', response.data.access);
+                localStorage.setItem('refresh_token', response.data.refresh);
+
+                await syncLocalCartToServer();
+                toast.success("Logged in successfully!");
+                navigate('/'); // Redirect to home or previous page
+            } else {
+                // Register Logic
+                await axios.post(`${API_URL}/auth/register/`, {
+                    full_name: name,
+                    email,
+                    phone_number: phone,
+                    password
+                });
+
+                toast.success("Account created successfully! Please log in.");
+                setIsLogin(true); // Switch to login mode
+            }
+        } catch (error) {
+            console.error("Auth error:", error);
+            const msg = error.response?.data?.email?.[0] ||
+                error.response?.data?.message ||
+                JSON.stringify(error.response?.data) ||
+                "Authentication failed";
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-[70vh] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -24,21 +94,38 @@ const Account = () => {
                         </button>
                     </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <input type="hidden" name="remember" defaultValue="true" />
                     <div className="rounded-md shadow-sm -space-y-px">
                         {!isLogin && (
-                            <div>
-                                <label htmlFor="name" className="sr-only">Full Name</label>
-                                <input
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    required
-                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                                    placeholder="Full Name"
-                                />
-                            </div>
+                            <>
+                                <div>
+                                    <label htmlFor="name" className="sr-only">Full Name</label>
+                                    <input
+                                        id="name"
+                                        name="name"
+                                        type="text"
+                                        required
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                                        placeholder="Full Name"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="phone" className="sr-only">Phone Number</label>
+                                    <input
+                                        id="phone"
+                                        name="phone"
+                                        type="tel"
+                                        required
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                                        placeholder="Phone Number"
+                                    />
+                                </div>
+                            </>
                         )}
                         <div>
                             <label htmlFor="email-address" className="sr-only">Email address</label>
@@ -48,21 +135,34 @@ const Account = () => {
                                 type="email"
                                 autoComplete="email"
                                 required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-t-md' : ''} focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm`}
                                 placeholder="Email address"
                             />
                         </div>
-                        <div>
+                        <div className="relative">
                             <label htmlFor="password" className="sr-only">Password</label>
                             <input
                                 id="password"
                                 name="password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 autoComplete="current-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
                                 placeholder="Password"
                             />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((s) => !s)}
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
                         </div>
                     </div>
 
@@ -91,9 +191,10 @@ const Account = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-70"
                         >
-                            {isLogin ? 'Sign in' : 'Sign up'}
+                            {loading ? 'Processing...' : (isLogin ? 'Sign in' : 'Sign up')}
                         </button>
                     </div>
 

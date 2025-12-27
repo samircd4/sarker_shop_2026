@@ -1,11 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import Product from '../components/Product'
 import { MdDevices, MdSettings, MdHome, MdWork, MdApps, MdFilterList } from 'react-icons/md'
-import axios from 'axios'
+import CategoryCarousel from '../components/CategoryCarousel.jsx'
+import FilterPanel from '../components/FilterPanel.jsx'
+import CategoryPanel from '../components/CategoryPanel.jsx'
+// import axios from 'axios'
+import api, { BASE_URL } from '../api/client'
 import localProducts from '../data/products.json'
 
 
 const API_URL = import.meta.env.VITE_API_URL
+
+const fixImage = (img) => {
+    if (!img) return ''
+    if (typeof img === 'string' && img.startsWith('http')) return img
+    return `${BASE_URL}${img}`
+}
 
 
 
@@ -15,24 +25,14 @@ const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [loading, setLoading] = useState(true)
     const [isFilterOpen, setIsFilterOpen] = useState(false)
-    const [showFilterPanel, setShowFilterPanel] = useState(false)
-    const [filterAnimationClass, setFilterAnimationClass] = useState('')
     const [isCategoryOpen, setIsCategoryOpen] = useState(false)
-    const [showCategoryPanel, setShowCategoryPanel] = useState(false)
-    const [categoryAnimationClass, setCategoryAnimationClass] = useState('')
     const [priceMin, setPriceMin] = useState(0)
-    const [priceMax, setPriceMax] = useState(1000000)
+    const [priceMax, setPriceMax] = useState(0)
     const [globalMin, setGlobalMin] = useState(0)
     const [globalMax, setGlobalMax] = useState(0)
     const [minRating, setMinRating] = useState(0)
     const [featuredOnly, setFeaturedOnly] = useState(false)
     const [selectedBrands, setSelectedBrands] = useState([])
-    const carouselRef = useRef(null)
-    const isDragging = useRef(false)
-    const startX = useRef(0)
-    const scrollStart = useRef(0)
-    const animationFrameId = useRef(null)
-    const isUserInteracting = useRef(false)
     const [categories, setCategories] = useState([{ name: 'All', logo: null }])
 
     const getCategoryName = (p) => {
@@ -47,100 +47,79 @@ const Products = () => {
         return typeof b === 'string' ? b : (b?.name || '')
     }
 
-    // Auto-scroll effect
-    useEffect(() => {
-        const container = carouselRef.current
-        if (!container) return
 
-        const animate = () => {
-            if (!isUserInteracting.current && !isDragging.current) {
-                if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 1) {
-                    container.scrollLeft = 0
-                } else {
-                    container.scrollLeft += 0.5 // Very slow scroll speed
-                }
-            }
-            animationFrameId.current = requestAnimationFrame(animate)
-        }
-
-        animationFrameId.current = requestAnimationFrame(animate)
-
-        return () => {
-            if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current)
-        }
-    }, [loading])
 
     useEffect(() => {
         // Helpful debug log
         console.log('API_URL', API_URL)
 
-        axios.get(`${API_URL}/products/`).then(response => {
-            let list = []
-            if (Array.isArray(response.data)) {
-                list = response.data
-            } else if (response.data && Array.isArray(response.data.results)) {
-                list = response.data.results
-            }
-            setProducts(list)
-            console.log('Products:', list)
-            setFilteredProducts(list)
-        }).catch(error => {
-            console.error('Products API error:', error)
-            // Fallback to bundled local data so UI still shows products during development
-            if (Array.isArray(localProducts) && localProducts.length > 0) {
-                const mapped = localProducts.map(p => ({ ...p, reviews_count: p.reviews }))
+        const fetchProducts = async () => {
+            try {
+                const response = await api.get('/products/')
+                let list = []
+                if (Array.isArray(response.data)) {
+                    list = response.data
+                } else if (response.data && Array.isArray(response.data.results)) {
+                    list = response.data.results
+                }
+                const mapped = list.map(p => ({
+                    ...p,
+                    image: fixImage(p.image)
+                }))
                 setProducts(mapped)
                 setFilteredProducts(mapped)
+            } catch (error) {
+                console.error('Products API error:', error)
+                // Fallback to bundled local data so UI still shows products during development
+                if (Array.isArray(localProducts) && localProducts.length > 0) {
+                    const mappedLocal = localProducts.map(p => ({
+                        ...p,
+                        reviews_count: p.reviews,
+                    }))
+                    setProducts(mappedLocal)
+                    setFilteredProducts(mappedLocal)
+                }
+                setLoading(false)
             }
-            setLoading(false)
-        })
+        }
+
+        fetchProducts()
     }, [])
 
 
     useEffect(() => {
-        axios.get(`${API_URL}/categories/`).then(response => {
-            const data = Array.isArray(response.data) ? response.data : (response.data?.results || [])
-            // Map API data to our structure
-            const apiCategories = data.map(c => ({
-                name: c.name,
-                logo: c.logo,
-                id: c.id,
-                slug: c.slug
-            }))
-
-            // Filter duplicates by name
-            const uniqueApiCategories = apiCategories.filter((c, index, self) =>
-                index === self.findIndex((t) => t.name === c.name)
-            )
-
-            setCategories([{ name: 'All', logo: null }, ...uniqueApiCategories])
-        }).catch(error => {
-            console.error('API Error:', error)
-            // Fallback to local data if API fails
-            const localNames = [...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
-            const localCats = localNames.map(name => ({ name, logo: null }))
-            setCategories([{ name: 'All', logo: null }, ...localCats])
-        })
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get('/categories/')
+                const data = Array.isArray(response.data) ? response.data : (response.data?.results || [])
+                const apiCategories = data.map(c => ({
+                    name: c.name,
+                    logo: fixImage(c.logo),
+                    id: c.id,
+                    slug: c.slug
+                }))
+                const uniqueApiCategories = apiCategories.filter((c, index, self) =>
+                    index === self.findIndex((t) => t.name === c.name)
+                )
+                setCategories([{ name: 'All', logo: null }, ...uniqueApiCategories])
+            } catch (error) {
+                console.error('Categories API error:', error)
+                // Fallback to local data if API fails
+                const localNames = [...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
+                const localCats = localNames.map(name => ({ name, logo: null }))
+                setCategories([{ name: 'All', logo: null }, ...localCats])
+            }
+        }
+        fetchCategories()
     }, [products])
 
 
 
 
-    const brands = Array.from(new Set(products.map(p => getBrandName(p)).filter(Boolean)))
+    const brands = Array.from(new Set((Array.isArray(products) ? products : []).map(p => getBrandName(p)).filter((s) => typeof s === 'string' && s.trim().length > 0)))
 
-    const categoryIconMap = {
-        Electronics: MdDevices,
-        Accessories: MdSettings,
-        Home: MdHome,
-        Office: MdWork,
-        All: MdApps,
-    }
 
-    const getCategoryImage = (category) => {
-        if (category === 'All') return null
-        const item = products.find(p => getCategoryName(p) === category)
-        return item?.image || null
-    }
+    // Category images come from the categories API (`logo` or similar field)
 
     useEffect(() => {
         // Simulate loading
@@ -161,30 +140,6 @@ const Products = () => {
             setPriceMax(gMax)
         }
     }, [products])
-
-    // Handle right-side category panel mount/unmount with slide animations
-    useEffect(() => {
-        if (isCategoryOpen) {
-            setShowCategoryPanel(true)
-            setCategoryAnimationClass('animate-slide-in-right')
-        } else {
-            setCategoryAnimationClass('animate-slide-out-right')
-            const t = setTimeout(() => setShowCategoryPanel(false), 300)
-            return () => clearTimeout(t)
-        }
-    }, [isCategoryOpen])
-
-    // Handle right-side filter panel animations and mount lifecycle
-    useEffect(() => {
-        if (isFilterOpen) {
-            setShowFilterPanel(true)
-            setFilterAnimationClass('animate-slide-in-right')
-        } else {
-            setFilterAnimationClass('animate-slide-out-right')
-            const t = setTimeout(() => setShowFilterPanel(false), 300)
-            return () => clearTimeout(t)
-        }
-    }, [isFilterOpen])
 
     useEffect(() => {
         let base = selectedCategory === 'All'
@@ -213,26 +168,19 @@ const Products = () => {
         setFilteredProducts(base)
     }, [selectedCategory, priceMin, priceMax, minRating, featuredOnly, selectedBrands, products])
 
-    const onPointerDown = (e) => {
-        const container = carouselRef.current
-        if (!container) return
-        isDragging.current = true
-        startX.current = e.clientX || (e.touches && e.touches[0]?.clientX) || 0
-        scrollStart.current = container.scrollLeft
+    const handleToggleBrand = (brand, checked) => {
+        if (checked) {
+            setSelectedBrands(prev => prev.includes(brand) ? prev : [...prev, brand])
+        } else {
+            setSelectedBrands(prev => prev.filter(x => x !== brand))
+        }
     }
-
-    const onPointerMove = (e) => {
-        if (!isDragging.current) return
-        e.preventDefault()
-        const container = carouselRef.current
-        if (!container) return
-        const clientX = e.clientX || (e.touches && e.touches[0]?.clientX) || 0
-        const delta = (startX.current - clientX)
-        container.scrollLeft = scrollStart.current + delta
-    }
-
-    const onPointerUp = () => {
-        isDragging.current = false
+    const handleClearAll = () => {
+        setPriceMin(globalMin)
+        setPriceMax(globalMax)
+        setMinRating(0)
+        setFeaturedOnly(false)
+        setSelectedBrands([])
     }
 
     if (loading) {
@@ -274,245 +222,38 @@ const Products = () => {
                     </div>
                 </div>
 
-                {/* Category Carousel: rectangular tiles with purple border, swipe to navigate */}
-                <div className="mb-6">
-                    <div
-                        ref={carouselRef}
-                        onMouseDown={(e) => {
-                            // Mouse down doesn't need to change interaction state as MouseEnter already set it
-                            onPointerDown(e)
-                        }}
-                        onMouseMove={onPointerMove}
-                        onMouseUp={(e) => {
-                            // Mouse up doesn't resume; MouseLeave will resume
-                            onPointerUp()
-                        }}
-                        onMouseEnter={() => { isUserInteracting.current = true }}
-                        onMouseLeave={() => {
-                            isUserInteracting.current = false
-                            onPointerUp()
-                        }}
-                        onTouchStart={(e) => {
-                            isUserInteracting.current = true
-                            onPointerDown(e)
-                        }}
-                        onTouchMove={onPointerMove}
-                        onTouchEnd={() => {
-                            isUserInteracting.current = false
-                            onPointerUp()
-                        }}
-                        className="flex gap-3 overflow-x-auto no-scrollbar px-1 select-none cursor-grab active:cursor-grabbing"
-                        style={{ scrollBehavior: 'auto' }} // Changed to auto for smooth JS scrolling
-                    >
-                        {categories.map((category) => {
-                            const catName = category.name
-                            const Icon = categoryIconMap[catName] || MdApps
-                            const imageSrc = category.logo || getCategoryImage(catName)
+                <CategoryCarousel
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                />
 
-                            const isActive = selectedCategory === catName
-                            const handleClick = (e) => {
-                                if (isDragging.current) {
-                                    e.preventDefault()
-                                    return
-                                }
-                                setSelectedCategory(catName)
-                            }
-                            return (
-                                <button
-                                    key={category.id || catName}
-                                    onClick={handleClick}
-                                    className={`snap-start shrink-0 flex flex-col items-center justify-start group ${isActive ? 'text-purple-700' : 'text-gray-800'}`}
-                                    style={{ width: '104px' }}
-                                >
-                                    <div className={`w-full h-24 rounded-md overflow-hidden border-2 ${isActive ? 'border-purple-500 shadow-md' : 'border-gray-200'} bg-white`}>
-                                        {imageSrc ? (
-                                            <img src={imageSrc} alt={catName} className="h-full w-full object-cover" />
-                                        ) : (
-                                            <div className="h-full w-full bg-gray-100 flex items-center justify-center">
-                                                <Icon className="h-7 w-7 text-gray-500" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="mt-2 text-xs sm:text-sm text-center line-clamp-1">{catName}</span>
-                                </button>
-                            )
-                        })}
-                    </div>
-                </div>
+                <FilterPanel
+                    open={isFilterOpen}
+                    onClose={() => setIsFilterOpen(false)}
+                    priceMin={priceMin}
+                    priceMax={priceMax}
+                    globalMin={globalMin}
+                    globalMax={globalMax}
+                    onChangePriceMin={(v) => setPriceMin(v)}
+                    onChangePriceMax={(v) => setPriceMax(v)}
+                    minRating={minRating}
+                    onChangeMinRating={(v) => setMinRating(v)}
+                    featuredOnly={featuredOnly}
+                    onChangeFeaturedOnly={(v) => setFeaturedOnly(v)}
+                    brands={brands}
+                    selectedBrands={selectedBrands}
+                    onToggleBrand={handleToggleBrand}
+                    onClearAll={handleClearAll}
+                />
 
-                {/* Filter Panel (Modal/Sheet) */}
-                {showFilterPanel && (
-                    <div className="fixed inset-0 z-50" onClick={() => setIsFilterOpen(false)}>
-                        <div
-                            className="absolute inset-0 bg-black/30"
-                            aria-hidden="true"
-                        />
-                        <div className={`absolute right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-xl border-l border-gray-200 ${filterAnimationClass}`} onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-between px-4 py-3 border-b bg-purple-600 text-white">
-                                <h2 className="text-lg font-semibold">Filters</h2>
-                                <button
-                                    onClick={() => setIsFilterOpen(false)}
-                                    className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                            <div className="p-4 space-y-6 overflow-y-auto">
-                                {/* Price Range */}
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1">
-                                            <label className="block text-xs text-gray-500">Min</label>
-                                            <input
-                                                type="number"
-                                                value={priceMin}
-                                                min={globalMin}
-                                                max={priceMax}
-                                                onChange={(e) => setPriceMin(Number(e.target.value))}
-                                                className="w-full border rounded-md px-2 py-1"
-                                            />
-                                        </div>
-                                        <div className="flex-1">
-                                            <label className="block text-xs text-gray-500">Max</label>
-                                            <input
-                                                type="number"
-                                                value={priceMax}
-                                                min={priceMin}
-                                                max={globalMax}
-                                                onChange={(e) => setPriceMax(Number(e.target.value))}
-                                                className="w-full border rounded-md px-2 py-1"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Rating */}
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Minimum Rating</h3>
-                                    <select
-                                        value={minRating}
-                                        onChange={(e) => setMinRating(Number(e.target.value))}
-                                        className="w-full border rounded-md px-2 py-2"
-                                    >
-                                        <option value={0}>Any</option>
-                                        <option value={3}>3+ stars</option>
-                                        <option value={4}>4+ stars</option>
-                                        <option value={4.5}>4.5+ stars</option>
-                                    </select>
-                                </div>
-
-                                {/* Featured */}
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        id="featured"
-                                        type="checkbox"
-                                        checked={featuredOnly}
-                                        onChange={(e) => setFeaturedOnly(e.target.checked)}
-                                        className="h-4 w-4"
-                                    />
-                                    <label htmlFor="featured" className="text-sm text-gray-700">Featured only</label>
-                                </div>
-
-                                {/* Brand (if present) */}
-                                {brands.length > 0 && (
-                                    <div>
-                                        <h3 className="text-sm font-medium text-gray-700 mb-2">Brand</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {brands.map((b) => {
-                                                const checked = selectedBrands.includes(b)
-                                                return (
-                                                    <label key={b} className={`flex items-center gap-2 border rounded-md px-2 py-2 ${checked ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={checked}
-                                                            onChange={(e) => {
-                                                                if (e.target.checked) {
-                                                                    setSelectedBrands(prev => [...prev, b])
-                                                                } else {
-                                                                    setSelectedBrands(prev => prev.filter(x => x !== b))
-                                                                }
-                                                            }}
-                                                        />
-                                                        <span className="text-sm">{b}</span>
-                                                    </label>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Actions */}
-                                <div className="flex items-center justify-between pt-2 border-t">
-                                    <button
-                                        onClick={() => {
-                                            setPriceMin(globalMin)
-                                            setPriceMax(globalMax)
-                                            setMinRating(0)
-                                            setFeaturedOnly(false)
-                                            setSelectedBrands([])
-                                        }}
-                                        className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                    >
-                                        Clear all
-                                    </button>
-                                    <button
-                                        onClick={() => setIsFilterOpen(false)}
-                                        className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
-                                    >
-                                        Apply filters
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Category Panel (Right Slide-out) */}
-                {showCategoryPanel && (
-                    <div className="fixed inset-0 z-50" onClick={() => setIsCategoryOpen(false)}>
-                        <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
-                        <div
-                            className={`absolute right-0 top-0 h-full w-full sm:w-80 bg-white shadow-xl border-l border-gray-200 ${categoryAnimationClass}`}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="flex items-center justify-between px-4 py-3 border-b bg-purple-600 text-white">
-                                <h2 className="text-lg font-semibold">Categories</h2>
-                                <button
-                                    onClick={() => setIsCategoryOpen(false)}
-                                    className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20"
-                                    aria-label="Close categories panel"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                            <div className="p-3 overflow-y-auto h-[calc(100%-56px)]">
-                                <ul className="space-y-1">
-                                    {categories.map((cat) => {
-                                        const catName = cat.name
-                                        const isActive = selectedCategory === catName
-                                        return (
-                                            <li key={cat.id || catName}>
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedCategory(catName)
-                                                        setIsCategoryOpen(false)
-                                                    }}
-                                                    className={`w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}`}
-                                                >
-                                                    <span className="inline-flex items-center gap-2">
-                                                        {(categoryIconMap[catName] || MdApps)({ className: 'w-4 h-4 text-purple-600' })}
-                                                        {catName}
-                                                    </span>
-                                                </button>
-                                            </li>
-                                        )
-                                    })}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <CategoryPanel
+                    open={isCategoryOpen}
+                    onClose={() => setIsCategoryOpen(false)}
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={setSelectedCategory}
+                />
             </div>
 
             {/* Products Grid */}
@@ -533,10 +274,6 @@ const Products = () => {
 }
 
 export default Products
-
-// Local animation keyframes for right-side slide panel
-// Keeping styles close to component for easier iteration; can be moved later.
-// eslint-disable-next-line
 const __styles = (
     <style>{`
         @keyframes slide-in-right {

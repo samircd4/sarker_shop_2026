@@ -1,5 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useCart } from "../context/CartContext.jsx";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import {
     FaMinus,
     FaPlus,
@@ -12,13 +15,17 @@ import {
 import { FaMoneyBillWave } from "react-icons/fa";
 import { SiVisa, SiMastercard } from "react-icons/si";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Checkout = () => {
-    const { cartItem, updateQuantity, deleteItem } = useCart();
+    const { cartItem, updateQuantity, deleteItem, setCartItem } = useCart();
+    const navigate = useNavigate();
 
     // Removed selection checkboxes for a cleaner mobile layout
 
     // Delivery address
     const [addressType, setAddressType] = useState("home");
+    const [email, setEmail] = useState("");
     const [fullName, setFullName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
@@ -27,7 +34,7 @@ const Checkout = () => {
     const [subDistrict, setSubDistrict] = useState("");
 
     // Payment
-    const [paymentMethod, setPaymentMethod] = useState("card_mfs");
+    const [paymentMethod, setPaymentMethod] = useState("cod");
 
     // Voucher/discount
     const [voucher, setVoucher] = useState("");
@@ -38,6 +45,72 @@ const Checkout = () => {
 
     // Terms
     const [accepted, setAccepted] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    // Auto-fill for authenticated users
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            // 1. Fetch User Profile
+            axios.get(`${API_URL}/customers/me/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+                .then(res => {
+                    if (res.data) {
+                        // Name
+                        if (res.data.name) setFullName(res.data.name);
+                        else if (res.data.username) setFullName(res.data.username);
+
+                        // Email
+                        if (res.data.email) setEmail(res.data.email);
+
+                        // Phone
+                        if (res.data.phone_number) setPhone(res.data.phone_number);
+                        else if (res.data.phone) setPhone(res.data.phone);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error fetching user profile:", err);
+                });
+
+            // 2. Fetch User Addresses
+            axios.get(`${API_URL}/addresses/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+                .then(res => {
+                    // Check if we have results array (pagination) or direct array
+                    const addresses = Array.isArray(res.data) ? res.data : (res.data.results || []);
+
+                    if (addresses.length > 0) {
+                        let foundAddress = null;
+
+                        // Priority 1: Default address
+                        foundAddress = addresses.find(addr => addr.is_default);
+
+                        // Priority 2: First address if no default
+                        if (!foundAddress) {
+                            foundAddress = addresses[0];
+                        }
+
+                        if (foundAddress) {
+                            if (foundAddress.address) setAddress(foundAddress.address);
+                            if (foundAddress.division) setDivision(foundAddress.division);
+                            if (foundAddress.district) setDistrict(foundAddress.district);
+                            if (foundAddress.sub_district) setSubDistrict(foundAddress.sub_district);
+
+                            // Also override name/phone if present in address and not set by profile
+                            // Or prefer address details for shipping? Usually yes.
+                            if (foundAddress.full_name) setFullName(foundAddress.full_name);
+                            if (foundAddress.phone) setPhone(foundAddress.phone);
+                            if (foundAddress.address_type) setAddressType(foundAddress.address_type.toLowerCase());
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error fetching addresses:", err);
+                });
+        }
+    }, []);
 
     // Totals (based on selected rows)
     const subtotal = useMemo(() => {
@@ -52,6 +125,99 @@ const Checkout = () => {
         0,
         subtotal + deliveryCharge - deliveryDiscount - discount
     );
+
+    const handlePlaceOrder = async () => {
+        if (!fullName || !phone || !address || !division || !district || !subDistrict || !email) {
+            toast.error("Please fill in all required fields");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Prepare items
+            const itemsInput = cartItem.map(item => ({
+                product_id: item.id,
+                quantity: item.quantity
+            }));
+
+            // Create Order Payload
+            // Sending address details directly for guest/new address
+            // Using specific keys required by backend for guest checkout: full_name, shipping_address
+            const orderPayload = {
+                items_input: itemsInput,
+                email: email,
+                full_name: fullName,
+                phone: phone,
+                shipping_address: address,
+                division: division,
+                district: district,
+                sub_district: subDistrict,
+                address_type: addressType
+            };
+
+            await axios.post(`${API_URL}/orders/`, orderPayload);
+
+            toast.success("Order placed successfully!");
+            setCartItem([]); // Clear cart
+
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                navigate("/dashboard", {
+                    state: {
+                        newOrder: {
+                            total: totalPayable,
+                            items_count: itemsInput.length,
+                            order_id: null // We don't have order ID from backend response currently? 
+                            // If backend returns order ID, we should use it. 
+                            // Current axios.post response is not captured.
+                        }
+                    }
+                });
+            } else {
+                navigate("/order-success", { state: { email, name: fullName, phone } });
+            }
+
+        } catch (error) {
+            console.error("Order placement error:", error);
+
+            // Handle server errors (often HTML) gracefully
+            if (error.response && error.response.status >= 500) {
+                // Check for specific Django "DoesNotExist" HTML response content if possible, 
+                // but usually we just see 500. 
+                // If the user sees "Product matching query does not exist", it implies a 500/404 from backend logic.
+                toast.error("Server error: Some items in your cart may no longer exist. Please clear your cart and try again.");
+                return;
+            }
+
+            let msg = "Failed to place order. Please try again.";
+
+            if (error.response?.data) {
+                if (typeof error.response.data === 'string' && error.response.data.trim().startsWith('<')) {
+                    if (error.response.data.includes("Product matching query does not exist")) {
+                        msg = "One or more items in your cart are no longer available. Please clear your cart.";
+                    } else {
+                        msg = `Server Error (${error.response.status}): ${error.response.statusText}`;
+                    }
+                } else if (error.response.data.detail) {
+                    msg = error.response.data.detail;
+                } else if (error.response.data.message) {
+                    msg = error.response.data.message;
+                } else {
+                    // Try to extract first validation error
+                    const values = Object.values(error.response.data);
+                    if (values.length > 0 && Array.isArray(values[0])) {
+                        msg = values[0][0]; // "Invalid pk '0'" or "Guest checkout requires..."
+                    } else {
+                        msg = JSON.stringify(error.response.data);
+                    }
+                }
+            }
+
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto px-4">
@@ -154,6 +320,18 @@ const Checkout = () => {
                         <h2 className="text-xl font-bold mb-4 text-neutral-800">
                             Delivery Address
                         </h2>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Email <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                placeholder="Email Address"
+                                className="w-full border rounded-md px-3 py-2"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -219,9 +397,16 @@ const Checkout = () => {
                                     onChange={(e) => setDistrict(e.target.value)}
                                 >
                                     <option value="">Select District</option>
+                                    {/* Ensure auto-filled value is shown if not in the list */}
+                                    {district && !["Dhaka", "Gazipur", "Narayanganj", "Kishoreganj", "Comilla", "Sylhet"].includes(district) && (
+                                        <option value={district}>{district}</option>
+                                    )}
                                     <option>Dhaka</option>
                                     <option>Gazipur</option>
                                     <option>Narayanganj</option>
+                                    <option>Kishoreganj</option>
+                                    <option>Comilla</option>
+                                    <option>Sylhet</option>
                                 </select>
                             </div>
                             <div>
@@ -234,9 +419,15 @@ const Checkout = () => {
                                     onChange={(e) => setSubDistrict(e.target.value)}
                                 >
                                     <option value="">Select Sub District</option>
+                                    {/* Ensure auto-filled value is shown if not in the list */}
+                                    {subDistrict && !["Uttara", "Banani", "Mirpur", "Kishoreganj", "Sadar"].includes(subDistrict) && (
+                                        <option value={subDistrict}>{subDistrict}</option>
+                                    )}
                                     <option>Uttara</option>
                                     <option>Banani</option>
                                     <option>Mirpur</option>
+                                    <option>Kishoreganj</option>
+                                    <option>Sadar</option>
                                 </select>
                             </div>
                         </div>
@@ -408,10 +599,15 @@ const Checkout = () => {
                         </div>
 
                         <button
-                            className="mt-4 w-full px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-                            disabled={!accepted}
+                            className="mt-4 w-full px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center"
+                            disabled={!accepted || loading}
+                            onClick={handlePlaceOrder}
                         >
-                            Confirm Order
+                            {loading ? (
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                            ) : (
+                                "Confirm Order"
+                            )}
                         </button>
                     </div>
                 </div>

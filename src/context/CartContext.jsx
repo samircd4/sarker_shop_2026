@@ -1,7 +1,14 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import api, { BASE_URL } from "../api/client";
 
 export const CartContext = createContext(null)
+
+const fixImage = (img) => {
+    if (!img) return "";
+    if (img.startsWith("http")) return img;
+    return `${BASE_URL}${img}`;
+}
 
 export const CartProvider = ({ children }) => {
     // Initialize cart from localStorage
@@ -15,52 +22,168 @@ export const CartProvider = ({ children }) => {
         }
     });
 
+    // Fetch cart from API on mount if logged in
+    const refreshCart = async () => {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
+        try {
+            const response = await api.get('/cart/');
+            if (response.data && response.data.items) {
+                const mappedItems = response.data.items.map(item => ({
+                    ...item.product,
+                    cart_item_id: item.id,
+                    quantity: item.quantity,
+                    image: fixImage(item.product.image)
+                }));
+                setCartItem(mappedItems);
+                localStorage.setItem("cartItems", JSON.stringify(mappedItems));
+            }
+        } catch (error) {
+            console.error("Error fetching cart:", error);
+        }
+    };
+
+    useEffect(() => {
+        refreshCart();
+    }, []);
+
     // Save to localStorage whenever cartItem changes
     useEffect(() => {
         localStorage.setItem("cartItems", JSON.stringify(cartItem));
     }, [cartItem]);
 
-    const addToCart = (product) => {
+    const addToCart = async (product) => {
+        const token = localStorage.getItem("access_token");
+
+        // Optimistic update
+        let updatedCart;
         const itemInCart = cartItem.find((item) => item.id === product.id)
+
         if (itemInCart) {
-            // Increase quantity if already in cart
-            const updatedCart = cartItem.map((item) =>
+            updatedCart = cartItem.map((item) =>
                 item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
             );
-            setCartItem(updatedCart)
             toast.success("Product quantity increased!")
         } else {
-            //Add new ietm with quantity 1
-            setCartItem([...cartItem, { ...product, quantity: 1 }])
+            updatedCart = [...cartItem, { ...product, quantity: 1, image: fixImage(product.image) }];
             toast.success("Product is added to cart!")
+        }
+        setCartItem(updatedCart);
 
+        // Sync with API if logged in
+        if (token) {
+            try {
+                const response = await api.post('/cart-items/', {
+                    product_id: product.id,
+                    quantity: 1
+                });
+
+                // If new item, update with cart_item_id
+                if (!itemInCart && response.data) {
+                    const cartItemId = response.data.id;
+                    setCartItem(prev => prev.map(item =>
+                        item.id === product.id ? { ...item, cart_item_id: cartItemId } : item
+                    ));
+                }
+            } catch (error) {
+                console.error("Error adding to cart:", error);
+                // Optionally revert changes or show error toast
+            }
         }
     }
 
-    const updateQuantity = (cartItem, productId, action) => {
-        setCartItem(cartItem.map(item => {
-            if (item.id === productId) {
-                let newUnit = item.quantity;
-                if (action === "increase") {
-                    newUnit = newUnit + 1
-                    toast.success("Quantity is increased!")
-                } else if (action === "decrease") {
-                    newUnit = newUnit - 1
-                    toast.success("Quantity is decreased!")
-                }
-                return newUnit > 0 ? { ...item, quantity: newUnit } : null
+    const updateQuantity = async (productId, action) => {
+        const token = localStorage.getItem("access_token");
+
+        // Find item to check current quantity and cart_item_id
+        const item = cartItem.find(i => i.id === productId);
+        if (!item) return;
+
+        let newQuantity = item.quantity;
+        if (action === "increase") {
+            newQuantity = newQuantity + 1;
+            toast.success("Quantity increased!");
+        } else if (action === "decrease") {
+            newQuantity = newQuantity - 1;
+            toast.success("Quantity decreased!");
+        }
+
+        if (newQuantity < 1) return;
+
+        // Optimistic update
+        setCartItem(prev => prev.map(i =>
+            i.id === productId ? { ...i, quantity: newQuantity } : i
+        ));
+
+        // API sync
+        if (token && item.cart_item_id) {
+            try {
+                await api.put(`/cart-items/${item.cart_item_id}/`, {
+                    product_id: item.id,
+                    quantity: newQuantity
+                });
+            } catch (error) {
+                console.error("Error updating quantity:", error);
             }
-            return item;
-        }).filter(item => item != null) // remove item qunatity 0
-        )
+        }
     }
 
-    const deleteItem = (productId) => {
-        setCartItem(cartItem.filter(item => item.id !== productId))
-        toast.success("Product is deleted from cart!")
+    const deleteItem = async (productId) => {
+        const token = localStorage.getItem("access_token");
+        const item = cartItem.find(i => i.id === productId);
+
+        // Optimistic update
+        setCartItem(prev => prev.filter(i => i.id !== productId));
+        toast.success("Product removed from cart!");
+
+        // API sync
+        if (token && item?.cart_item_id) {
+            try {
+                await api.delete(`/cart-items/${item.cart_item_id}/`);
+            } catch (error) {
+                console.error("Error deleting item:", error);
+            }
+        }
     }
 
-    return <CartContext.Provider value={{ cartItem, setCartItem, addToCart, updateQuantity, deleteItem }}>
+    const syncLocalCartToServer = async () => {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
+        try {
+            const server = await api.get('/cart/');
+            const serverItems = Array.isArray(server.data?.items) ? server.data.items : [];
+            const serverMap = {};
+            serverItems.forEach(si => {
+                const pid = si.product?.id;
+                if (pid != null) {
+                    serverMap[pid] = { cart_item_id: si.id, quantity: si.quantity };
+                }
+            });
+            for (const li of cartItem) {
+                const pid = li.id;
+                const qty = li.quantity || 1;
+                if (serverMap[pid]) {
+                    const current = serverMap[pid];
+                    if (current.quantity !== qty) {
+                        await api.put(`/cart-items/${current.cart_item_id}/`, {
+                            product_id: pid,
+                            quantity: qty
+                        });
+                    }
+                } else {
+                    await api.post('/cart-items/', {
+                        product_id: pid,
+                        quantity: qty
+                    });
+                }
+            }
+            await refreshCart();
+        } catch (err) {
+            console.error("Error syncing local cart to server:", err);
+        }
+    };
+
+    return <CartContext.Provider value={{ cartItem, setCartItem, addToCart, updateQuantity, deleteItem, refreshCart, syncLocalCartToServer }}>
         {children}
     </CartContext.Provider>
 }
