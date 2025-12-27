@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Product from '../components/Product'
-import { MdDevices, MdSettings, MdHome, MdWork, MdApps, MdFilterList } from 'react-icons/md'
+import { MdFilterList, MdApps } from 'react-icons/md'
 import CategoryCarousel from '../components/CategoryCarousel.jsx'
 import FilterPanel from '../components/FilterPanel.jsx'
 import CategoryPanel from '../components/CategoryPanel.jsx'

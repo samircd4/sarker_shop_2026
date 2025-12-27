@@ -53,6 +53,7 @@ const CategoryPanel = ({
                     <ul className="space-y-1">
                         {categories.map((cat) => {
                             const category = cat.name
+
                             const isActive = selectedCategory === category
                             const Icon = categoryIconMap[category] || MdApps
                             return (
@@ -62,12 +63,20 @@ const CategoryPanel = ({
                                             onSelectCategory(category)
                                             onClose()
                                         }}
-                                        className={`w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}`}
+                                        className={`flex w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}`}
                                     >
                                         <span className="inline-flex items-center gap-2">
-                                            <Icon className="w-4 h-4 text-purple-600" />
-                                            {category}
+                                            {cat.logo ? (
+                                                <img
+                                                    src={cat.logo}
+                                                    alt={cat.name}
+                                                    className="w-5 h-5 object-contain"
+                                                />
+                                            ) : (
+                                                <span className="text-lg">📱</span> // Fallback icon
+                                            )}
                                         </span>
+                                        <span className="ml-2">{category}</span>
                                     </button>
                                 </li>
                             )
