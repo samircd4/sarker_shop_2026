@@ -8,7 +8,7 @@ const Product = ({ product }) => {
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
             <div className="relative">
-                <Link to={`/products/${product.id}`}>
+                <Link to={`/products/${product.slug}`}>
                     <img
                         src={product.image}
                         alt={product.name}
@@ -34,7 +34,7 @@ const Product = ({ product }) => {
                     <span className="text-sm text-gray-500 ml-2">({product.reviews_count})</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">
-                    <Link to={`/products/${product.id}`} className="hover:text-purple-700">
+                    <Link to={`/products/${product.slug}`} className="hover:text-purple-700">
                         {product.name}
                     </Link>
                 </h3>

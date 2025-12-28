@@ -1,122 +1,151 @@
 // src/components/SearchBar.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { FiSearch } from 'react-icons/fi';
-import productsData from '../data/products.json';
+import api from '../api/client';
+import { Link } from 'react-router-dom';
 
 const SearchBar = ({ onFocus, onBlur }) => {
     const [showInput, setShowInput] = useState(false);
     const [query, setQuery] = useState('');
-    const [filtered, setFiltered] = useState([]);
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     const wrapperRef = useRef(null);
     const inputRef = useRef(null);
+    const debounceRef = useRef(null);
 
-    // Filter products as user types
+    // 🔁 Realtime search with debounce
     useEffect(() => {
-        if (query.trim() === '') {
-            setFiltered([]);
-        } else {
-            setFiltered(
-                productsData.filter(product =>
-                    product.name.toLowerCase().includes(query.toLowerCase())
-                )
-            );
+        if (!query.trim()) {
+            setResults([]);
+            return;
         }
+
+        setLoading(true);
+
+        debounceRef.current && clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(async () => {
+            try {
+                const res = await api.get(`/products/search/?q=${query}`);
+                setResults(res.data.results || []);
+            } catch (err) {
+                console.error('Search error:', err);
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        }, 400); // debounce delay
+
+        return () => clearTimeout(debounceRef.current);
     }, [query]);
 
-    // Focus input when shown on mobile
+    // Focus input on mobile
     useEffect(() => {
         if (showInput && inputRef.current) {
             inputRef.current.focus();
         }
     }, [showInput]);
 
-    // Close search bar and dropdown when clicking outside
+    // Close on outside click
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (
-                wrapperRef.current &&
-                !wrapperRef.current.contains(event.target)
-            ) {
+        const handleClickOutside = (e) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
                 setShowInput(false);
                 setQuery('');
-                setFiltered([]);
+                setResults([]);
             }
-        }
+        };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Optionally handle search submit
-    };
+    const handleSubmit = (e) => e.preventDefault();
 
     return (
         <div ref={wrapperRef} className="relative w-full max-w-xl">
-            {/* Mobile: search icon button (only when input is hidden) */}
+            {/* Mobile icon */}
             {!showInput && (
                 <button
                     type="button"
-                    className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 p-2 z-10 transition-opacity duration-300"
+                    className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 p-2 z-10"
                     onClick={() => setShowInput(true)}
-                    aria-label="Open search"
                 >
                     <FiSearch className="text-purple-600 text-2xl" />
                 </button>
             )}
-            {/* Search input: always visible on sm+, toggled on mobile */}
+
+            {/* Search input */}
             <form
                 onSubmit={handleSubmit}
                 className={`
-          w-full flex items-center border-2 border-purple-600 rounded-full px-4 py-2 bg-white
-          transition-all duration-300
-          ${showInput ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
-          sm:opacity-100 sm:scale-100 sm:pointer-events-auto
-        `}
+                    w-full flex items-center border-2 border-purple-600 rounded-full px-4 py-2 bg-white
+                    transition-all duration-300
+                    ${showInput ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
+                    sm:opacity-100 sm:scale-100 sm:pointer-events-auto
+                `}
             >
                 <input
                     ref={inputRef}
                     type="text"
                     placeholder="Search the product"
-                    className="flex-1 outline-none bg-transparent text-gray-600 w-full"
+                    className="flex-1 outline-none bg-transparent text-gray-600"
                     value={query}
-                    onChange={e => setQuery(e.target.value)}
+                    onChange={(e) => setQuery(e.target.value)}
                     onFocus={onFocus}
                     onBlur={onBlur}
                 />
-                <button type="submit">
-                    <FiSearch className="text-purple-600 text-xl" />
-                </button>
+                <FiSearch className="text-purple-600 text-xl" />
             </form>
-            {/* Dropdown for filtered products with animation */}
-            <div
-                className={`
-          absolute left-0 right-0 mt-2
-          z-50
-          transition-all duration-300
-          ${filtered.length > 0 ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}
-        `}
-                style={{ transformOrigin: 'top' }}
-            >
-                {filtered.length > 0 && (
-                    <ul className="bg-white border border-orange-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {filtered.map(product => (
-                            <li
-                                key={product.id}
-                                className="px-4 py-2 hover:bg-orange-50 cursor-pointer flex items-center gap-2"
-                            >
-                                {product.image && (
-                                    <img src={product.image} alt={product.name} className="w-8 h-8 object-cover rounded" />
-                                )}
-                                <span className="font-medium">{product.name}</span>
-                                {product.price && (
-                                    <span className="ml-auto text-sm text-gray-500">${product.price}</span>
-                                )}
+
+            {/* Results dropdown */}
+            {(loading || results.length > 0) && (
+                <div className="absolute left-0 right-0 mt-2 z-50">
+                    <ul className="bg-white border rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                        {loading && (
+                            <li className="px-4 py-3 text-gray-500 text-sm">
+                                Searching...
                             </li>
+                        )}
+
+                        {!loading && results.map((product) => (
+                            <Link
+                                key={product.id}
+                                to={`/products/${product.slug}`}
+                                onClick={() => {
+                                    setQuery('');
+                                    setResults([]);
+                                    setShowInput(false);
+                                }}
+                                className="block"
+                            >
+                                <li className="px-4 py-2 hover:bg-purple-50 cursor-pointer flex items-center gap-3">
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-10 h-10 object-cover rounded"
+                                    />
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm truncate">
+                                            {product.name}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            ৳ {product.price}
+                                        </p>
+                                    </div>
+                                </li>
+                            </Link>
                         ))}
+
+
+                        {!loading && query && results.length === 0 && (
+                            <li className="px-4 py-3 text-gray-500 text-sm">
+                                No products found
+                            </li>
+                        )}
                     </ul>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

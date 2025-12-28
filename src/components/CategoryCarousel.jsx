@@ -93,13 +93,13 @@ const CategoryCarousel = ({
                             key={`${cat.name}-${idx}`}
                             onClick={() => onSelectCategory(cat.name)}
                             className={`shrink-0 flex flex-col items-center ${isActive ? 'text-purple-700' : 'text-gray-800'
-                                }`}
+                                } cursor-pointer`}
                             style={{ width: 104 }}
                         >
                             <div
                                 className={`w-full h-24 rounded-md border-2 overflow-hidden ${isActive
-                                        ? 'border-purple-500 shadow-md'
-                                        : 'border-gray-200'
+                                    ? 'border-purple-500 shadow-md'
+                                    : 'border-gray-200'
                                     } bg-white`}
                             >
                                 {cat.logo ? (
@@ -115,9 +115,10 @@ const CategoryCarousel = ({
                                 )}
                             </div>
 
-                            <span className="mt-2 text-xs sm:text-sm text-center truncate">
+                            <span className="mt-2 text-xs sm:text-sm text-center line-clamp-2 leading-tight">
                                 {cat.name}
                             </span>
+
                         </button>
                     )
                 })}

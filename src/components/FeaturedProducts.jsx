@@ -32,7 +32,7 @@ const FeaturedProducts = () => {
 
     if (loading) {
         return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[...Array(5)].map((_, i) => (
                     <div key={i} className="bg-white rounded-lg shadow-lg h-80 animate-pulse"></div>
                 ))}
@@ -41,7 +41,7 @@ const FeaturedProducts = () => {
     }
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {featured.map((product) => (
                 <Product key={product.id} product={product} />
             ))}

@@ -257,11 +257,12 @@ const Products = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 lg:gap-4">
                 {filteredProducts.map((product) => (
                     <Product key={product.id} product={product} />
                 ))}
             </div>
+
 
             {filteredProducts.length === 0 && (
                 <div className="text-center py-12">

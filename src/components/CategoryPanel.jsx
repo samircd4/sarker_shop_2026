@@ -63,7 +63,7 @@ const CategoryPanel = ({
                                             onSelectCategory(category)
                                             onClose()
                                         }}
-                                        className={`flex w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}`}
+                                        className={`flex w-full text-left px-3 py-2 rounded-md border transition-colors ${isActive ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 hover:bg-purple-200 text-gray-800'} cursor-pointer`}
                                     >
                                         <span className="inline-flex items-center gap-2">
                                             {cat.logo ? (

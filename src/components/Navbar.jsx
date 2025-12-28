@@ -110,26 +110,6 @@ const Navbar = () => {
                             &times;
                         </button>
 
-                        <div className="p-4 border-b">
-                            <h2 className="text-xl font-bold text-purple-600 mb-4">Menu</h2>
-                            <ul className="space-y-3">
-                                <li>
-                                    <Link to="/" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>Home</Link>
-                                </li>
-                                <li>
-                                    <Link to="/products" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>Products</Link>
-                                </li>
-                                <li>
-                                    <Link to="/about" className="block text-gray-700 hover:text-purple-600 font-medium" onClick={() => setDrawerOpen(false)}>About</Link>
-                                </li>
-                                <li>
-                                    <Link to="/account" className="text-gray-700 hover:text-purple-600 font-medium flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
-                                        <FaUser /> Account
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-
                         <div className="flex-1 overflow-y-auto">
                             <CategoryList />
                         </div>
