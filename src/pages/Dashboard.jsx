@@ -322,7 +322,7 @@ const Dashboard = () => {
                                                 </div>
                                                 <button
                                                     onClick={() => downloadInvoice(order)}
-                                                    className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
+                                                    className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
                                                 >
                                                     Download Invoice
                                                 </button>

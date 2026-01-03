@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useCart } from "../context/CartContext.jsx";
 import axios from "axios";
+import api from "../api/client";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import {
@@ -57,6 +58,9 @@ const Checkout = () => {
             })
                 .then(res => {
                     if (res.data) {
+                        if (res.data.id) {
+                            localStorage.setItem('user_id', String(res.data.id));
+                        }
                         // Name
                         if (res.data.name) setFullName(res.data.name);
                         else if (res.data.username) setFullName(res.data.username);
@@ -144,7 +148,6 @@ const Checkout = () => {
             // Sending address details directly for guest/new address
             // Using specific keys required by backend for guest checkout: full_name, shipping_address
             const orderPayload = {
-                customer: localStorage.getItem('access_token') ? 'authenticated' : 'guest',
                 items_input: itemsInput,
                 email: email,
                 full_name: fullName,
@@ -153,10 +156,11 @@ const Checkout = () => {
                 division: division,
                 district: district,
                 sub_district: subDistrict,
-                address_type: addressType
+                address_type: addressType,
+                payment_method: paymentMethod
             };
 
-            await axios.post(`${API_URL}/orders/`, orderPayload);
+            const response = await api.post('/orders/', orderPayload);
 
             toast.success("Order placed successfully!");
             setCartItem([]); // Clear cart
@@ -168,9 +172,7 @@ const Checkout = () => {
                         newOrder: {
                             total: totalPayable,
                             items_count: itemsInput.length,
-                            order_id: null // We don't have order ID from backend response currently? 
-                            // If backend returns order ID, we should use it. 
-                            // Current axios.post response is not captured.
+                            order_id: response?.data?.id ?? null
                         }
                     }
                 });
