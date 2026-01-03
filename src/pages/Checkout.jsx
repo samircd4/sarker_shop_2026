@@ -361,18 +361,7 @@ const Checkout = () => {
                                 />
                             </div>
                         </div>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Address <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="House no. / Building / Street"
-                                className="w-full border rounded-md px-3 py-2"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                            />
-                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -433,6 +422,18 @@ const Checkout = () => {
                                     <option>Sadar</option>
                                 </select>
                             </div>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Address <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="House no. / Building / Street"
+                                className="w-full border rounded-md px-3 py-2"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                            />
                         </div>
                         <div className="flex gap-3">
                             <button
