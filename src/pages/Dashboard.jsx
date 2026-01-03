@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaUser, FaBoxOpen, FaCheckCircle } from 'react-icons/fa';
+import { FaUser, FaCheckCircle } from 'react-icons/fa';
 import axios from 'axios';
 import api from '../api/client';
 import { toast } from 'react-toastify';
+import RecentOrder from '../components/dashboard/RecentOrder';
+import MyOrders from '../components/dashboard/MyOrders';
+import Addresses from '../components/dashboard/Addresses';
+import ProfileSettings from '../components/dashboard/ProfileSettings';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -410,460 +414,83 @@ const Dashboard = () => {
                 {/* Main Content */}
                 <div className="md:col-span-3 space-y-6">
                     {activeTab === 'dashboard' && (
-                        <div className="bg-white border rounded-lg p-6 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <FaBoxOpen /> Recent Orders
-                                </h2>
-                            </div>
-                            {ordersLoading && (
-                                <div className="flex justify-center items-center py-12">
-                                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-                                </div>
-                            )}
-                            {!ordersLoading && ordersError && (
-                                <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-                                    {ordersError}
-                                </div>
-                            )}
-                            {!ordersLoading && !ordersError && (() => {
-                                const lastOrder = orders.length ? sortOrdersDesc(orders)[0] : null;
-                                if (!lastOrder) {
-                                    return (
-                                        <div className="text-center py-8 text-gray-500">
-                                            No recent orders found.
-                                        </div>
-                                    );
-                                }
-                                return (
-                                    <div className={`border rounded-lg p-4 bg-white border-gray-200`}>
-                                        <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
-                                            <div className="space-y-1">
-                                                <div className="font-semibold text-gray-900">Order #{lastOrder.id}</div>
-                                                <div className="text-sm text-gray-500">{formatDate(lastOrder.created_at)}</div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusChipClass(lastOrder.status)}`}>
-                                                    {lastOrder.status || 'Pending'}
-                                                </span>
-                                                <span className="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800">
-                                                    ৳ {lastOrder.total_amount ?? lastOrder.total}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-                                            <div className="text-sm">
-                                                <span className={`px-2 py-1 text-xs font-semibold rounded ${paymentChipClass(lastOrder)}`}>
-                                                    {getPaymentStatus(lastOrder)}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-gray-700">Transaction ID: {getTransactionId(lastOrder)}</div>
-                                            <div className="text-sm text-gray-700">Payment Method: {getPaymentMethod(lastOrder)}</div>
-                                        </div>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-sm">
-                                                <thead>
-                                                    <tr className="text-left text-gray-600 border-b">
-                                                        <th className="py-2 pr-3">Item</th>
-                                                        <th className="py-2 pr-3">Qty</th>
-                                                        <th className="py-2">Price</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {(lastOrder.items || lastOrder.order_items || []).map((it) => (
-                                                        <tr key={it.id || `${lastOrder.id}-${it.product?.id || it.product_name}`} className="border-b last:border-0">
-                                                            <td className="py-2 pr-3">
-                                                                {it.product?.name || it.product_name}
-                                                            </td>
-                                                            <td className="py-2 pr-3">{it.quantity}</td>
-                                                            <td className="py-2">৳ {it.unit_price ?? it.price}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
-                                            <div className="text-sm text-gray-700">
-                                                <div className="font-medium">Shipping Address</div>
-                                                <div>{formatAddress(lastOrder.shipping_address)}</div>
-                                            </div>
-                                            <button
-                                                onClick={() => downloadInvoice(lastOrder)}
-                                                className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
-                                            >
-                                                Download Invoice
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
-                        </div>
+                        <RecentOrder
+                            orders={orders}
+                            ordersLoading={ordersLoading}
+                            ordersError={ordersError}
+                            formatDate={formatDate}
+                            statusChipClass={statusChipClass}
+                            paymentChipClass={paymentChipClass}
+                            getPaymentStatus={getPaymentStatus}
+                            getTransactionId={getTransactionId}
+                            getPaymentMethod={getPaymentMethod}
+                            formatAddress={formatAddress}
+                            downloadInvoice={downloadInvoice}
+                            sortOrdersDesc={sortOrdersDesc}
+                        />
                     )}
 
                     {activeTab === 'orders' && (
-                        <div className="bg-white border rounded-lg p-6 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <FaBoxOpen /> My Orders
-                                </h2>
-                            </div>
-
-                            {ordersLoading && (
-                                <div className="flex justify-center items-center py-12">
-                                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-                                </div>
-                            )}
-
-                            {!ordersLoading && ordersError && (
-                                <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-                                    {ordersError}
-                                </div>
-                            )}
-
-                            {!ordersLoading && !ordersError && orders.length === 0 && (
-                                <div className="text-center py-8 text-gray-500">
-                                    No orders found.
-                                </div>
-                            )}
-
-                            {!ordersLoading && !ordersError && orders.length > 0 && (
-                                <div className="space-y-4">
-                                    {orders.map((order) => (
-                                        <div key={order.id} className={`border rounded-lg p-4 bg-white border-gray-200`}>
-                                            <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
-                                                <div className="space-y-1">
-                                                    <div className="font-semibold text-gray-900">Order #{order.id}</div>
-                                                    <div className="text-sm text-gray-500">{formatDate(order.created_at)}</div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusChipClass(order.status)}`}>
-                                                        {order.status || 'Pending'}
-                                                    </span>
-                                                    <span className="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-800">
-                                                        ৳ {order.total_amount ?? order.total}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-                                                <div className="text-sm">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded ${paymentChipClass(order)}`}>
-                                                        {getPaymentStatus(order)}
-                                                    </span>
-                                                </div>
-                                                <div className="text-sm text-gray-700">Transaction ID: {getTransactionId(order)}</div>
-                                                <div className="text-sm text-gray-700">Payment Method: {getPaymentMethod(order)}</div>
-                                            </div>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-sm">
-                                                    <thead>
-                                                        <tr className="text-left text-gray-600 border-b">
-                                                            <th className="py-2 pr-3">Item</th>
-                                                            <th className="py-2 pr-3">Qty</th>
-                                                            <th className="py-2">Price</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {(order.items || order.order_items || []).map((it) => (
-                                                            <tr key={it.id || `${order.id}-${it.product?.id || it.product_name}`} className="border-b last:border-0">
-                                                                <td className="py-2 pr-3">
-                                                                    {it.product?.name || it.product_name}
-                                                                </td>
-                                                                <td className="py-2 pr-3">{it.quantity}</td>
-                                                                <td className="py-2">৳ {it.unit_price ?? it.price}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
-                                                <div className="text-sm text-gray-700">
-                                                    <div className="font-medium">Shipping Address</div>
-                                                    <div>{formatAddress(order.shipping_address)}</div>
-                                                </div>
-                                                <button
-                                                    onClick={() => downloadInvoice(order)}
-                                                    className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
-                                                >
-                                                    Download Invoice
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <MyOrders
+                            orders={orders}
+                            ordersLoading={ordersLoading}
+                            ordersError={ordersError}
+                            formatDate={formatDate}
+                            statusChipClass={statusChipClass}
+                            paymentChipClass={paymentChipClass}
+                            getPaymentStatus={getPaymentStatus}
+                            getTransactionId={getTransactionId}
+                            getPaymentMethod={getPaymentMethod}
+                            formatAddress={formatAddress}
+                            downloadInvoice={downloadInvoice}
+                        />
                     )}
 
                     {activeTab === 'profile' && (
-                        <div className="bg-white border rounded-lg p-6 shadow-sm">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">Profile Settings</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="md:col-span-1">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
-                                            {profileImagePreview ? (
-                                                <img src={profileImagePreview} alt="Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="text-3xl font-bold text-gray-400">
-                                                    {profileName?.[0]?.toUpperCase() || user.name?.[0]?.toUpperCase() || 'U'}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <label className="cursor-pointer inline-block">
-                                            <span className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white">Change Photo</span>
-                                            <input type="file" accept="image/*" className="hidden" onChange={onProfileImageChange} />
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                            <input
-                                                type="text"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={profileName}
-                                                onChange={(e) => setProfileName(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                            <input
-                                                type="email"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={profileEmail}
-                                                onChange={(e) => setProfileEmail(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                            <input
-                                                type="tel"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={profilePhone}
-                                                onChange={(e) => setProfilePhone(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                                            <input
-                                                type="text"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                placeholder="Optional"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mt-6 flex items-center gap-3">
-                                        <button
-                                            onClick={onProfileSave}
-                                            disabled={savingProfile}
-                                            className={`px-4 py-2 rounded-md text-white ${savingProfile ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700'}`}
-                                        >
-                                            {savingProfile ? 'Saving...' : 'Save Changes'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setProfileName(user.name || '');
-                                                setProfileEmail(user.email || '');
-                                                setProfilePhone('');
-                                                setProfileImagePreview('');
-                                            }}
-                                            className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                        >
-                                            Reset
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <ProfileSettings
+                            user={user}
+                            profileName={profileName}
+                            setProfileName={setProfileName}
+                            profileEmail={profileEmail}
+                            setProfileEmail={setProfileEmail}
+                            profilePhone={profilePhone}
+                            setProfilePhone={setProfilePhone}
+                            profileImagePreview={profileImagePreview}
+                            onProfileImageChange={onProfileImageChange}
+                            onProfileSave={onProfileSave}
+                            savingProfile={savingProfile}
+                        />
                     )}
 
                     {activeTab === 'address' && (
-                        <div className="bg-white border rounded-lg p-6 shadow-sm">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="md:col-span-2">
-                                    <h2 className="text-xl font-bold text-gray-800 mb-4">Saved Addresses</h2>
-                                    {addressesLoading && (
-                                        <div className="flex justify-center items-center py-12">
-                                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-500"></div>
-                                        </div>
-                                    )}
-                                    {!addressesLoading && addressesError && (
-                                        <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-                                            {addressesError}
-                                        </div>
-                                    )}
-                                    {!addressesLoading && !addressesError && (addresses || []).length === 0 && (
-                                        <div className="text-gray-600">No addresses yet.</div>
-                                    )}
-                                    {!addressesLoading && !addressesError && (addresses || []).length > 0 && (
-                                        <div className="space-y-4">
-                                            {(addresses || []).map(addr => (
-                                                <div key={addr.id} className={`border rounded-lg p-4 ${addr.is_default ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'}`}>
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        <div className="text-sm text-gray-700">
-                                                            <div className="font-medium">{addr.full_name}</div>
-                                                            <div>{addr.phone}</div>
-                                                            <div>{addr.address}</div>
-                                                            <div>{[addr.sub_district, addr.district, addr.division].filter(Boolean).join(', ')}</div>
-                                                            <div className="text-xs text-gray-500">Type: {addr.address_type}</div>
-                                                            {addr.is_default && (
-                                                                <span className="inline-block mt-1 px-2 py-1 text-xs rounded bg-green-100 text-green-800">Default</span>
-                                                            )}
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {!addr.is_default && (
-                                                                <button
-                                                                    onClick={() => handleSetDefault(addr.id)}
-                                                                    className="px-3 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white text-sm"
-                                                                >
-                                                                    Set Default
-                                                                </button>
-                                                            )}
-                                                            <button
-                                                                onClick={() => handleEditAddress(addr)}
-                                                                className="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm"
-                                                            >
-                                                                Edit
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteAddress(addr)}
-                                                                className="px-3 py-2 rounded-md border border-red-300 text-red-600 hover:bg-red-50 text-sm"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="md:col-span-1">
-                                    <h2 className="text-xl font-bold text-gray-800 mb-4">{editingAddressId ? 'Edit Address' : 'Add Address'}</h2>
-                                    <form onSubmit={handleAddressSubmit} className="space-y-3">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                            <input
-                                                type="text"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={addrFullName}
-                                                onChange={(e) => setAddrFullName(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                            <input
-                                                type="tel"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={addrPhone}
-                                                onChange={(e) => setAddrPhone(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
-                                            <select
-                                                className="w-full border rounded-md px-3 py-2"
-                                                value={addrDivision}
-                                                onChange={(e) => {
-                                                    setAddrDivision(e.target.value);
-                                                    setAddrDistrict('');
-                                                    setAddrSubDistrict('');
-                                                }}
-                                            >
-                                                <option value="">Select Division</option>
-                                                {Object.keys(BD_REGIONS).map(div => (
-                                                    <option key={div} value={div}>{div}</option>
-                                                ))}
-                                                {addrDivision && !BD_REGIONS[addrDivision] && (
-                                                    <option value={addrDivision}>{addrDivision}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                                            <select
-                                                className="w-full border rounded-md px-3 py-2"
-                                                value={addrDistrict}
-                                                onChange={(e) => {
-                                                    setAddrDistrict(e.target.value);
-                                                    setAddrSubDistrict('');
-                                                }}
-                                            >
-                                                <option value="">Select District</option>
-                                                {(BD_REGIONS[addrDivision]?.districts ? Object.keys(BD_REGIONS[addrDivision].districts) : []).map(d => (
-                                                    <option key={d} value={d}>{d}</option>
-                                                ))}
-                                                {addrDistrict && !(BD_REGIONS[addrDivision]?.districts?.[addrDistrict]) && (
-                                                    <option value={addrDistrict}>{addrDistrict}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Sub District</label>
-                                            <select
-                                                className="w-full border rounded-md px-3 py-2"
-                                                value={addrSubDistrict}
-                                                onChange={(e) => setAddrSubDistrict(e.target.value)}
-                                            >
-                                                <option value="">Select Sub District</option>
-                                                {(BD_REGIONS[addrDivision]?.districts?.[addrDistrict] || []).map(s => (
-                                                    <option key={s} value={s}>{s}</option>
-                                                ))}
-                                                {addrSubDistrict && !(BD_REGIONS[addrDivision]?.districts?.[addrDistrict]?.includes(addrSubDistrict)) && (
-                                                    <option value={addrSubDistrict}>{addrSubDistrict}</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                            <input
-                                                type="text"
-                                                className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                value={addrAddress}
-                                                onChange={(e) => setAddrAddress(e.target.value)}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                                            <select
-                                                className="w-full border rounded-md px-3 py-2"
-                                                value={addrType}
-                                                onChange={(e) => setAddrType(e.target.value)}
-                                            >
-                                                <option>Home</option>
-                                                <option>Office</option>
-                                                <option>Other</option>
-                                            </select>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                id="addrDefault"
-                                                type="checkbox"
-                                                checked={addrDefault}
-                                                onChange={(e) => setAddrDefault(e.target.checked)}
-                                            />
-                                            <label htmlFor="addrDefault" className="text-sm text-gray-700">Set as default address</label>
-                                        </div>
-                                        <div className="flex items-center gap-3 pt-2">
-                                            <button
-                                                type="submit"
-                                                className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
-                                            >
-                                                {editingAddressId ? 'Update' : 'Add'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={resetAddressForm}
-                                                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                            >
-                                                Reset
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                        <Addresses
+                            addresses={addresses}
+                            addressesLoading={addressesLoading}
+                            addressesError={addressesError}
+                            BD_REGIONS={BD_REGIONS}
+                            addrFullName={addrFullName}
+                            setAddrFullName={setAddrFullName}
+                            addrPhone={addrPhone}
+                            setAddrPhone={setAddrPhone}
+                            addrAddress={addrAddress}
+                            setAddrAddress={setAddrAddress}
+                            addrDivision={addrDivision}
+                            setAddrDivision={setAddrDivision}
+                            addrDistrict={addrDistrict}
+                            setAddrDistrict={setAddrDistrict}
+                            addrSubDistrict={addrSubDistrict}
+                            setAddrSubDistrict={setAddrSubDistrict}
+                            addrType={addrType}
+                            setAddrType={setAddrType}
+                            addrDefault={addrDefault}
+                            setAddrDefault={setAddrDefault}
+                            editingAddressId={editingAddressId}
+                            handleAddressSubmit={handleAddressSubmit}
+                            resetAddressForm={resetAddressForm}
+                            handleEditAddress={handleEditAddress}
+                            handleDeleteAddress={handleDeleteAddress}
+                            handleSetDefault={handleSetDefault}
+                        />
                     )}
                 </div>
             </div>
