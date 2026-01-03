@@ -4,7 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import api from '../api/client';
 import { Link } from 'react-router-dom';
 
-const SearchBar = ({ onFocus, onBlur }) => {
+const SearchBar = ({ onFocus, onBlur, onOpen, onClose }) => {
     const [showInput, setShowInput] = useState(false);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
@@ -61,15 +61,24 @@ const SearchBar = ({ onFocus, onBlur }) => {
     }, []);
 
     const handleSubmit = (e) => e.preventDefault();
+    const closeSearch = () => {
+        setShowInput(false);
+        setQuery('');
+        setResults([]);
+        onClose && onClose();
+    }
 
     return (
-        <div ref={wrapperRef} className="relative w-full max-w-xl">
+        <div ref={wrapperRef} className="relative w-full sm:max-w-xl max-w-[200px]">
             {/* Mobile icon */}
             {!showInput && (
                 <button
                     type="button"
                     className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 p-2 z-10"
-                    onClick={() => setShowInput(true)}
+                    onClick={() => {
+                        setShowInput(true);
+                        onOpen && onOpen();
+                    }}
                 >
                     <FiSearch className="text-purple-600 text-2xl" />
                 </button>
@@ -79,10 +88,11 @@ const SearchBar = ({ onFocus, onBlur }) => {
             <form
                 onSubmit={handleSubmit}
                 className={`
-                    w-full flex items-center border-2 border-purple-600 rounded-full px-4 py-2 bg-white
+                    w-full flex items-center border-2 border-purple-600 rounded-full bg-white
                     transition-all duration-300
                     ${showInput ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}
                     sm:opacity-100 sm:scale-100 sm:pointer-events-auto
+                    px-2 py-1 sm:px-4 sm:py-2
                 `}
             >
                 <input
@@ -113,9 +123,7 @@ const SearchBar = ({ onFocus, onBlur }) => {
                                 key={product.id}
                                 to={`/products/${product.slug}`}
                                 onClick={() => {
-                                    setQuery('');
-                                    setResults([]);
-                                    setShowInput(false);
+                                    closeSearch();
                                 }}
                                 className="block"
                             >

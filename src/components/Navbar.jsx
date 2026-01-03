@@ -56,12 +56,11 @@ const Navbar = () => {
                     {/* Brand and Menu section */}
                     <div
                         className={`
-                            flex items-center
-                            overflow-hidden transition-all duration-300
+                            flex items-center flex-shrink-0
+                            md:overflow-hidden transition-all duration-300
                             ${searchFocused ? 'w-0 opacity-0 mr-0' : 'w-auto opacity-100 mr-4'}
                             md:w-auto md:opacity-100 md:mr-4
                         `}
-                        style={{ minWidth: searchFocused ? 0 : undefined }}
                     >
                         <Link
                             to={'/'}
@@ -72,7 +71,11 @@ const Navbar = () => {
                         </Link>
                     </div>
                     {/* SearchBar */}
-                    <div className="flex-1 flex justify-center transition-all duration-300">
+                    <div className={`
+                        transition-all duration-300 flex justify-center
+                        ${searchFocused ? 'w-[60%] max-w-[220px]' : 'w-10'}
+                        md:flex-1 md:w-auto md:max-w-none
+                    `}>
                         <SearchBar
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
