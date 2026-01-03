@@ -144,6 +144,7 @@ const Checkout = () => {
             // Sending address details directly for guest/new address
             // Using specific keys required by backend for guest checkout: full_name, shipping_address
             const orderPayload = {
+                customer: localStorage.getItem('access_token') ? 'authenticated' : 'guest',
                 items_input: itemsInput,
                 email: email,
                 full_name: fullName,
