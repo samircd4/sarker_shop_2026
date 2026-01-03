@@ -7,6 +7,7 @@ import CategoryPanel from '../components/CategoryPanel.jsx'
 // import axios from 'axios'
 import api, { BASE_URL } from '../api/client'
 import localProducts from '../data/products.json'
+import { useNavigate } from 'react-router-dom'
 
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -20,6 +21,7 @@ const fixImage = (img) => {
 
 
 const Products = () => {
+    const navigate = useNavigate()
     const [products, setProducts] = useState([])
     const [filteredProducts, setFilteredProducts] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('All')
@@ -47,7 +49,27 @@ const Products = () => {
         return typeof b === 'string' ? b : (b?.name || '')
     }
 
+    const slugify = (text) => {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '')
+    }
 
+    const handleSelectCategory = (catName) => {
+        if (catName === 'All') {
+            // If we are already on products page, maybe just reset category filter?
+            // But user wants "single category page".
+            // If user clicks "All", they probably want to see all products, which is this page.
+            setSelectedCategory('All')
+            return
+        }
+        const cat = categories.find(c => c.name === catName)
+        const slug = cat ? (cat.slug || slugify(cat.name)) : slugify(catName)
+        navigate(`/category/${slug}`)
+    }
 
     useEffect(() => {
         // Helpful debug log
@@ -68,6 +90,7 @@ const Products = () => {
                 }))
                 setProducts(mapped)
                 setFilteredProducts(mapped)
+                setLoading(false)
             } catch (error) {
                 console.error('Products API error:', error)
                 // Fallback to bundled local data so UI still shows products during development
@@ -96,38 +119,28 @@ const Products = () => {
                     name: c.name,
                     logo: fixImage(c.logo),
                     id: c.id,
-                    slug: c.slug
+                    slug: c.slug || slugify(c.name)
                 }))
+
+                // Remove duplicates
                 const uniqueApiCategories = apiCategories.filter((c, index, self) =>
                     index === self.findIndex((t) => t.name === c.name)
                 )
+
                 setCategories([{ name: 'All', logo: null }, ...uniqueApiCategories])
             } catch (error) {
                 console.error('Categories API error:', error)
-                // Fallback to local data if API fails
+                // Fallback: extract from products
                 const localNames = [...new Set(products.map(p => getCategoryName(p)).filter(Boolean))]
                 const localCats = localNames.map(name => ({ name, logo: null }))
                 setCategories([{ name: 'All', logo: null }, ...localCats])
             }
         }
-        fetchCategories()
+        if (products.length > 0) {
+            fetchCategories()
+        }
     }, [products])
 
-
-
-
-    const brands = Array.from(new Set((Array.isArray(products) ? products : []).map(p => getBrandName(p)).filter((s) => typeof s === 'string' && s.trim().length > 0)))
-
-
-    // Category images come from the categories API (`logo` or similar field)
-
-    useEffect(() => {
-        // Simulate loading
-        const timer = setTimeout(() => {
-            setLoading(false)
-        }, 500)
-        return () => clearTimeout(timer)
-    }, [])
 
     useEffect(() => {
         if (products.length > 0) {
@@ -141,32 +154,39 @@ const Products = () => {
         }
     }, [products])
 
-    useEffect(() => {
-        let base = selectedCategory === 'All'
-            ? products
-            : products.filter(product => getCategoryName(product) === selectedCategory)
 
-        // Apply price range
+    useEffect(() => {
+        let base = products
+
+        // Category Filter
+        if (selectedCategory !== 'All') {
+            base = base.filter(p => getCategoryName(p) === selectedCategory)
+        }
+
+        // Price Filter
         base = base.filter(p => {
             const price = Number(p.price) || 0
             return price >= priceMin && price <= priceMax
         })
 
-        // Apply rating
+        // Rating Filter
         base = base.filter(p => (p.rating ?? 0) >= minRating)
 
-        // Apply featured
+        // Featured Filter
         if (featuredOnly) {
             base = base.filter(p => p.is_featured)
         }
 
-        // Apply brand if available
+        // Brand Filter
         if (selectedBrands.length > 0) {
             base = base.filter(p => selectedBrands.includes(getBrandName(p)))
         }
 
         setFilteredProducts(base)
     }, [selectedCategory, priceMin, priceMax, minRating, featuredOnly, selectedBrands, products])
+
+
+    const brands = Array.from(new Set((Array.isArray(products) ? products : []).map(p => getBrandName(p)).filter((s) => typeof s === 'string' && s.trim().length > 0)))
 
     const handleToggleBrand = (brand, checked) => {
         if (checked) {
@@ -175,7 +195,9 @@ const Products = () => {
             setSelectedBrands(prev => prev.filter(x => x !== brand))
         }
     }
+
     const handleClearAll = () => {
+        setSelectedCategory('All')
         setPriceMin(globalMin)
         setPriceMax(globalMax)
         setMinRating(0)
@@ -183,19 +205,14 @@ const Products = () => {
         setSelectedBrands([])
     }
 
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
             </div>
         )
     }
-
-
-
-
-
-
 
     return (
         <div className="w-[95%] sm:w-[90%] max-w-6xl mx-auto">
@@ -225,7 +242,7 @@ const Products = () => {
                 <CategoryCarousel
                     categories={categories}
                     selectedCategory={selectedCategory}
-                    onSelectCategory={setSelectedCategory}
+                    onSelectCategory={handleSelectCategory}
                 />
 
                 <FilterPanel
@@ -252,7 +269,7 @@ const Products = () => {
                     onClose={() => setIsCategoryOpen(false)}
                     categories={categories}
                     selectedCategory={selectedCategory}
-                    onSelectCategory={setSelectedCategory}
+                    onSelectCategory={handleSelectCategory}
                 />
             </div>
 

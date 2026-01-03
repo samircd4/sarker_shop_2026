@@ -40,7 +40,7 @@ export default function CopyableText({ value, label }) {
 
             <button
                 onClick={handleCopy}
-                className="text-xs px-2 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
+                className="text-xs px-2 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500 transition cursor-pointer"
                 aria-label={`Copy ${label || "text"}`}
             >
                 {copied ? (

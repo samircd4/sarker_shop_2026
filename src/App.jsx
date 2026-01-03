@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import Contact from './pages/Contact';
 import Account from './pages/Account';
 import OrderSuccess from './pages/OrderSuccess';
+import CategoryPage from './pages/CategoryPage';
 import Dashboard from './pages/Dashboard';
 
 
@@ -22,6 +23,9 @@ const App = () => (
                 <Route path="about" element={<About />} />
                 <Route path="products" element={<Products />} />
                 <Route path="products/:id" element={<ProductDetails />} />
+                <Route path="categories" element={<CategoryPage />} />
+                <Route path="category/:slug" element={<CategoryPage />} />
+                <Route path="brand/:slug" element={<CategoryPage />} />
                 <Route path="cart" element={<Cart />} />
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="contact" element={<Contact />} />

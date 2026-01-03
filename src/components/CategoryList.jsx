@@ -1,18 +1,27 @@
 // src/components/CategoryList.jsx
 import React, { useEffect, useState } from 'react';
 import { MdApps } from 'react-icons/md';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { useNavigate } from 'react-router-dom';
+import api from '../api/client';
 
 const CategoryList = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const slugify = (text) => {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '')
+    }
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(`${API_URL}/categories/`);
+                const response = await api.get(`/categories/`);
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
                 setCategories(data.slice(0, 8)); // Limit to first 8 to match design
                 setLoading(false);
@@ -24,6 +33,11 @@ const CategoryList = () => {
 
         fetchCategories();
     }, []);
+
+    const handleCategoryClick = (cat) => {
+        const slug = cat.slug || slugify(cat.name);
+        navigate(`/category/${slug}`);
+    };
 
     if (loading) {
         return (
@@ -48,6 +62,7 @@ const CategoryList = () => {
                 {categories.map(cat => (
                     <li
                         key={cat.id || cat.name}
+                        onClick={() => handleCategoryClick(cat)}
                         className="flex items-center gap-3 px-4 py-2 hover:bg-purple-100 cursor-pointer text-base"
                     >
                         {cat.logo ? (
@@ -63,7 +78,12 @@ const CategoryList = () => {
                     </li>
                 ))}
                 <li>
-                    <button className='hidden sm:block w-full text-center p-2 bg-purple-600 text-white font-bold rounded cursor-pointer py-3'>More</button>
+                    <button
+                        onClick={() => navigate('/categories')}
+                        className='hidden sm:block w-full text-center p-2 bg-purple-600 text-white font-bold rounded cursor-pointer py-3'
+                    >
+                        More
+                    </button>
                 </li>
             </ul>
         </div>

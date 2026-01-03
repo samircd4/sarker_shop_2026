@@ -5,7 +5,7 @@ import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useCart } from "../context/CartContext.jsx";
 import axios from "axios";
 import Spacification from "../components/Spacification.jsx";
-import CopyableText from "../components/CopyableText.jsx";
+import ProAttributes from "../components/ProAttributes.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -252,7 +252,7 @@ const ProductDetails = () => {
                 <ol className="flex items-center gap-2">
                     <li><Link to="/products" className="hover:text-purple-700 focus-visible:outline-none focus-visible:ring-2 ring-purple-700 rounded">Products</Link></li>
                     <li>›</li>
-                    <li><span>{product?.category.name || "Category"}</span></li>
+                    <li><Link to={`/category/${product?.category.slug}`} className="hover:text-purple-700 focus-visible:outline-none focus-visible:ring-2 ring-purple-700 rounded"><span>{product?.category.name || "Category"}</span></Link></li>
                     <li>›</li>
                     <li><span>{product?.name || "Product Name"}</span></li>
                 </ol>
@@ -341,8 +341,8 @@ const ProductDetails = () => {
                     </div>
                     <div className="border-t my-6" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* <div>
-                            <div className="text-sm text-gray-600 mb-2">Available Size</div>
+                        <div>
+                            <div className="text-sm text-gray-600 mb-2 font-medium">Available Variant</div>
                             <div className="flex gap-2">
                                 {["S", "M", "L"].map((s) => (
                                     <button
@@ -355,9 +355,21 @@ const ProductDetails = () => {
                                     </button>
                                 ))}
                             </div>
-                        </div> */}
-                        <div className="mt-4">
-                            <p className="text-gray-700 leading-relaxed">{product.short_description || description}</p>
+                        </div>
+                        <div>
+                            <div className="text-sm text-gray-600 mb-2 font-medium">Color</div>
+                            <div className="flex gap-2">
+                                {["S", "M", "L"].map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={() => setSelectedSize(s)}
+                                        aria-pressed={selectedSize === s}
+                                        className={`w-10 h-10 rounded-md border ${selectedSize === s ? "border-purple-700 bg-purple-50" : "border-gray-300 bg-white"} hover:border-purple-700 focus-visible:outline-none focus-visible:ring-2 ring-purple-700`}
+                                    >
+                                        {s}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                     <div className="border-t my-6" />
@@ -370,28 +382,11 @@ const ProductDetails = () => {
                         </div>
                         <button onClick={handleAddToCart} className="px-5 py-3 rounded-md bg-purple-700 hover:bg-purple-800 text-white focus-visible:outline-none focus-visible:ring-2 ring-purple-700" disabled={stockStatus !== "in_stock"}>Add to cart</button>
                     </div>
-                    
+
                     {/* ####################################################### */}
-                    
-                    <div className="">
 
-                        {brand && (
-                            <div className="mt-6 text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
-                                <span className="font-semibold text-purple-700">Brand:</span>
-                                <span className="ml-2 text-purple-800 font-medium">{brand}</span>
-                            </div>
-                        )}
-
-                        <div className="mt-6 flex gap-8 items-center text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
-                            <span className="font-semibold text-purple-700">PRODUCT_ID:</span>
-                            <CopyableText className="ml-2 text-purple-800 font-medium" value={product?.product_id || "N/A"}/>
-                        </div>
-                        <div className="mt-6 flex gap-8 items-center text-sm border border-purple-200 rounded-lg px-3 py-2 bg-purple-50">
-                            <span className="font-semibold text-purple-700">SKU:</span>
-                            <CopyableText className="ml-2 text-purple-800 font-medium" value={product?.sku || "N/A"}/>
-                        </div>
-                        
-
+                    <div>
+                        <ProAttributes product={product} />
                     </div>
 
 

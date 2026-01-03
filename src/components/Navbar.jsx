@@ -82,7 +82,8 @@ const Navbar = () => {
                     <nav className='flex gap-7 items-center p-1'>
                         <ul className='md:flex gap-7 items-center text-xl font-semibold hidden'>
                             <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Home</li></NavLink>
-                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Products</li></NavLink>
+                            <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Store</li></NavLink>
+                            {/* <NavLink to={"/categories"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Categories</li></NavLink> */}
                             <NavLink to={'/about'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>About</li></NavLink>
                         </ul>
                         <button className='relative' onClick={() => setCartOpen(true)} aria-label="Open cart">

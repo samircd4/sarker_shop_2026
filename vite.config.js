@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: [
       'localhost',
       '.ngrok-free.app',
-      'pill-cfr-postings-guarantees.trycloudflare.com',
+      'll4m3z8j-5173.asse.devtunnels.ms',
     ],
   },
 })
