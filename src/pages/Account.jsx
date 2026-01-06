@@ -68,10 +68,10 @@ const Account = () => {
         } catch (error) {
             console.error("Auth error:", error);
             const msg = error.response?.data?.email?.[0] ||
-                error.response?.data?.message ||
+                error.response?.data?.detail ||
                 JSON.stringify(error.response?.data) ||
                 "Authentication failed";
-            toast.error(msg);
+            toast.error(msg);         
         } finally {
             setLoading(false);
         }

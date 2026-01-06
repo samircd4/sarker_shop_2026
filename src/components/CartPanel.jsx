@@ -37,19 +37,27 @@ const CartPanel = ({ open, onClose }) => {
                             <div className="text-center text-gray-500 py-12">Your cart is empty.</div>
                         )}
                         {cartItem.map((item) => (
-                            <div key={item.id} className="flex items-center gap-3 border rounded-md p-3">
+                            <div key={`${item.id}:${item.variant?.id ?? 'base'}`} className="flex items-center gap-3 border rounded-md p-3">
                                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between">
-                                        <h4 className="text-sm font-semibold text-gray-800">{item.name}</h4>
-                                        <button className="text-xs text-red-600 hover:text-red-700" onClick={() => deleteItem(item.id)}>Remove</button>
+                                        <h4 className="text-sm font-semibold text-gray-800">
+                                            {item.name}
+                                        </h4>
+                                        <h3 className='text-sm font-semibold text-gray-800'>BDT {item.price}</h3>
+
+                                        <button className="text-xs text-red-600 hover:text-red-700" onClick={() => deleteItem(item.id, item.variant?.id ?? null)}>Remove</button>
                                     </div>
-                                    <div className="text-sm text-gray-600">BDT {item.price}</div>
+                                    <div className="text-sm text-gray-600">{item.variant && (
+                                        <span className="ml-1 text-xs text-gray-600">
+                                            {item.variant?.color ? `${item.variant?.color}` : ''} {item.variant?.ram ? `${item.variant?.ram}GB` : ''}{item.variant?.storage ? `/${item.variant?.storage}GB` : ''}
+                                        </span>
+                                    )}</div>
                                     <div className="mt-2 flex items-center gap-2">
                                         <button
                                             aria-label="Decrease quantity"
                                             className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                                            onClick={() => updateQuantity(item.id, 'decrease')}
+                                            onClick={() => updateQuantity(item.id, 'decrease', undefined, item.variant?.id ?? null)}
                                         >
                                             -
                                         </button>
@@ -57,7 +65,7 @@ const CartPanel = ({ open, onClose }) => {
                                         <button
                                             aria-label="Increase quantity"
                                             className="px-2 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                                            onClick={() => updateQuantity(item.id, 'increase')}
+                                            onClick={() => updateQuantity(item.id, 'increase', undefined, item.variant?.id ?? null)}
                                         >
                                             +
                                         </button>

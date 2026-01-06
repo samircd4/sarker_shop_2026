@@ -3,7 +3,20 @@ import React from 'react';
 const Spacification = ({ specifications }) => {
     // If no real specifications are passed, fallback to some defaults or show empty
     const specs = (specifications && specifications.length > 0)
-        ? specifications.map(s => ({ label: s.key, value: s.value }))
+        ? (() => {
+            const out = [];
+            const seen = new Set();
+            for (const s of specifications) {
+                const label = s.key ?? s.label ?? '';
+                const value = s.value ?? '';
+                const key = `${label}:${value}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    out.push({ label, value });
+                }
+            }
+            return out;
+        })()
         : [
             { label: 'Brand', value: 'Sarker Shop' },
             { label: 'Model', value: '2026 Edition' },

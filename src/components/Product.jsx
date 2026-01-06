@@ -43,10 +43,16 @@ const Product = ({ product }) => {
                     <div className="mb-2">
                         <span className="text-md font-bold text-primary-600">BDT {product.price}</span>
                     </div>
-                    <button onClick={() => addToCart(product)} className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
-                        <FaShoppingCart className="mr-2" />
-                        Add to Cart
-                    </button>
+                    {Array.isArray(product.variants) && product.variants.length > 0 ? (
+                        <Link to={`/products/${product.slug}`} className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                            Select Variant
+                        </Link>
+                    ) : (
+                        <button onClick={() => addToCart(product)} className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                            <FaShoppingCart className="mr-2" />
+                            Add to Cart
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

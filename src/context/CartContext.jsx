@@ -31,6 +31,7 @@ export const CartProvider = ({ children }) => {
             if (response.data && response.data.items) {
                 const mappedItems = response.data.items.map(item => ({
                     ...item.product,
+                    variant: item.variant ? { ...item.variant } : undefined,
                     cart_item_id: item.id,
                     quantity: item.quantity,
                     image: fixImage(item.product.image)
@@ -57,12 +58,17 @@ export const CartProvider = ({ children }) => {
 
         // Optimistic update
         let updatedCart;
-        const itemInCart = cartItem.find((item) => item.id === product.id)
+        const itemInCart = cartItem.find((item) => {
+            const a = item.id === product.id;
+            const b = (item.variant?.id ?? null) === (product.variant?.id ?? null);
+            return a && b;
+        });
 
         if (itemInCart) {
-            updatedCart = cartItem.map((item) =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-            );
+            updatedCart = cartItem.map((item) => {
+                const same = item.id === product.id && (item.variant?.id ?? null) === (product.variant?.id ?? null);
+                return same ? { ...item, quantity: item.quantity + 1 } : item;
+            });
             toast.success("Product quantity increased!")
         } else {
             updatedCart = [...cartItem, { ...product, quantity: 1, image: fixImage(product.image) }];
@@ -75,6 +81,7 @@ export const CartProvider = ({ children }) => {
             try {
                 const response = await api.post('/cart-items/', {
                     product_id: product.id,
+                    variant_id: product.variant?.id,
                     quantity: 1
                 });
 
@@ -82,7 +89,9 @@ export const CartProvider = ({ children }) => {
                 if (!itemInCart && response.data) {
                     const cartItemId = response.data.id;
                     setCartItem(prev => prev.map(item =>
-                        item.id === product.id ? { ...item, cart_item_id: cartItemId } : item
+                        (item.id === product.id && (item.variant?.id ?? null) === (product.variant?.id ?? null))
+                            ? { ...item, cart_item_id: cartItemId }
+                            : item
                     ));
                 }
             } catch (error) {
@@ -92,11 +101,11 @@ export const CartProvider = ({ children }) => {
         }
     }
 
-    const updateQuantity = async (productId, action) => {
+    const updateQuantity = async (productId, action, value, variantId = null) => {
         const token = localStorage.getItem("access_token");
 
         // Find item to check current quantity and cart_item_id
-        const item = cartItem.find(i => i.id === productId);
+        const item = cartItem.find(i => i.id === productId && (i.variant?.id ?? null) === (variantId ?? null));
         if (!item) return;
 
         let newQuantity = item.quantity;
@@ -105,21 +114,31 @@ export const CartProvider = ({ children }) => {
             toast.success("Quantity increased!");
         } else if (action === "decrease") {
             newQuantity = newQuantity - 1;
+            if (newQuantity < 1) {
+                toast.error('Minimum Quantity is 1')
+
+                return;
+            }
             toast.success("Quantity decreased!");
+        } else if (action === "set") {
+            const q = Number(value) || 1;
+            newQuantity = q < 1 ? 1 : q;
         }
 
-        if (newQuantity < 1) return;
+
 
         // Optimistic update
-        setCartItem(prev => prev.map(i =>
-            i.id === productId ? { ...i, quantity: newQuantity } : i
-        ));
+        setCartItem(prev => prev.map(i => {
+            const same = i.id === productId && (i.variant?.id ?? null) === (variantId ?? null);
+            return same ? { ...i, quantity: newQuantity } : i;
+        }));
 
         // API sync
         if (token && item.cart_item_id) {
             try {
                 await api.put(`/cart-items/${item.cart_item_id}/`, {
                     product_id: item.id,
+                    variant_id: item.variant?.id,
                     quantity: newQuantity
                 });
             } catch (error) {
@@ -128,12 +147,12 @@ export const CartProvider = ({ children }) => {
         }
     }
 
-    const deleteItem = async (productId) => {
+    const deleteItem = async (productId, variantId = null) => {
         const token = localStorage.getItem("access_token");
-        const item = cartItem.find(i => i.id === productId);
+        const item = cartItem.find(i => i.id === productId && (i.variant?.id ?? null) === (variantId ?? null));
 
         // Optimistic update
-        setCartItem(prev => prev.filter(i => i.id !== productId));
+        setCartItem(prev => prev.filter(i => !(i.id === productId && (i.variant?.id ?? null) === (variantId ?? null))));
         toast.success("Product removed from cart!");
 
         // API sync
@@ -155,24 +174,28 @@ export const CartProvider = ({ children }) => {
             const serverMap = {};
             serverItems.forEach(si => {
                 const pid = si.product?.id;
+                const vid = si.variant?.id ?? null;
                 if (pid != null) {
-                    serverMap[pid] = { cart_item_id: si.id, quantity: si.quantity };
+                    serverMap[`${pid}:${vid}`] = { cart_item_id: si.id, quantity: si.quantity };
                 }
             });
             for (const li of cartItem) {
                 const pid = li.id;
+                const vid = li.variant?.id ?? null;
                 const qty = li.quantity || 1;
-                if (serverMap[pid]) {
-                    const current = serverMap[pid];
+                if (serverMap[`${pid}:${vid}`]) {
+                    const current = serverMap[`${pid}:${vid}`];
                     if (current.quantity !== qty) {
                         await api.put(`/cart-items/${current.cart_item_id}/`, {
                             product_id: pid,
+                            variant_id: vid || undefined,
                             quantity: qty
                         });
                     }
                 } else {
                     await api.post('/cart-items/', {
                         product_id: pid,
+                        variant_id: vid || undefined,
                         quantity: qty
                     });
                 }

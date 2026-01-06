@@ -4,17 +4,10 @@ import axios from "axios";
 import api from "../api/client";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import {
-    FaMinus,
-    FaPlus,
-    FaTrash,
-    FaHome,
-    FaBuilding,
-    FaCheck,
-    FaMobileAlt,
-} from "react-icons/fa";
+import { FaHome, FaBuilding, FaCheck, FaMobileAlt } from "react-icons/fa";
 import { FaMoneyBillWave } from "react-icons/fa";
 import { SiVisa, SiMastercard } from "react-icons/si";
+import ItemTable from "../components/cart/ItemTable.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -138,11 +131,12 @@ const Checkout = () => {
 
         setLoading(true);
         try {
-            // Prepare items
-            const itemsInput = cartItem.map(item => ({
-                product_id: item.id,
-                quantity: item.quantity
-            }));
+            // Prepare items — prefer variant_id if available
+            const itemsInput = cartItem.map(item => (
+                item.variant?.id
+                    ? { variant_id: item.variant.id, quantity: item.quantity }
+                    : { product_id: item.id, quantity: item.quantity }
+            ));
 
             // Create Order Payload
             // Sending address details directly for guest/new address
@@ -231,92 +225,13 @@ const Checkout = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left column: Cart table + Delivery Address */}
                 <div className="lg:col-span-2">
-                    {/* Items table */}
-                    <div className="bg-white border rounded-lg overflow-hidden">
-                        {/* Header row */}
-                        <div className="grid grid-cols-12 items-center px-4 py-3 border-b text-gray-700 gap-x-2">
-                            <div className="col-span-1"></div>
-                            <div className="col-span-4 font-medium">Product</div>
-                            <div className="col-span-2 font-medium text-center">Price</div>
-                            <div className="col-span-1 font-medium text-center">Qty.</div>
-                            <div className="col-span-2 font-medium text-right">Total</div>
-                            <div className="col-span-2 font-medium text-center">Action</div>
-                        </div>
-
-                        {/* Item rows */}
-                        <div className="divide-y">
-                            {cartItem.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="grid grid-cols-12 items-center px-4 py-3 gap-x-2"
-                                >
-                                    <div className="col-span-2 flex items-center">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-12 h-12 object-cover rounded"
-                                        />
-                                    </div>
-                                    <div className="col-span-3">
-                                        <div className="text-sm md:text-base font-semibold text-gray-800">
-                                            {item.name}
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2 text-center text-gray-800 pr-2">
-                                        {item.price}
-                                    </div>
-                                    <div className="col-span-2">
-                                        <div className="flex items-center justify-center gap-1">
-                                            <button
-                                                aria-label="Decrease quantity"
-                                                className="w-7 h-7 rounded-md text-purple-600 flex items-center justify-center text-xs"
-                                                onClick={() =>
-                                                    updateQuantity(cartItem, item.id, "decrease")
-                                                }
-                                            >
-                                                <FaMinus size={12} />
-                                            </button>
-                                            <input
-                                                className="min-w-10 w-14 text-center text-md border border-gray-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) =>
-                                                    updateQuantity(
-                                                        cartItem,
-                                                        item.id,
-                                                        "set",
-                                                        Number(e.target.value)
-                                                    )
-                                                }
-                                            />
-                                            <button
-                                                aria-label="Increase quantity"
-                                                className="w-7 h-7 rounded-md text-purple-600 flex items-center justify-center text-xs"
-                                                onClick={() =>
-                                                    updateQuantity(cartItem, item.id, "increase")
-                                                }
-                                            >
-                                                <FaPlus size={12} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2 text-right font-medium">
-                                        {((item.price || 0) * (item.quantity || 0)).toFixed(0)}
-                                    </div>
-                                    <div className="col-span-1 text-center">
-                                        <button
-                                            aria-label={`Remove ${item.name}`}
-                                            className="p-1.5 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
-                                            onClick={() => deleteItem(item.id)}
-                                        >
-                                            <FaTrash size={12} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <ItemTable
+                        items={cartItem}
+                        onDecrease={(id, vid) => updateQuantity(id, "decrease", undefined, vid)}
+                        onIncrease={(id, vid) => updateQuantity(id, "increase", undefined, vid)}
+                        onSet={(id, qty, vid) => updateQuantity(id, "set", qty, vid)}
+                        onRemove={(id, vid) => deleteItem(id, vid)}
+                    />
 
                     {/* Delivery Address */}
                     <div className="mt-6 bg-white border rounded-lg p-4">
@@ -361,7 +276,7 @@ const Checkout = () => {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
