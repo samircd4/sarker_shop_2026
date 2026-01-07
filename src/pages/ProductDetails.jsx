@@ -1,14 +1,12 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { FaStar, FaShoppingCart } from "react-icons/fa";
+import { FaStar } from "react-icons/fa";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useCart } from "../context/CartContext.jsx";
 import api from "../api/client";
 import { toast } from "react-toastify";
 import Spacification from "../components/Spacification.jsx";
-import ProAttributes from "../components/ProAttributes.jsx";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import ProductAttributes from "../components/ProductAttributes.jsx";
 
 const Tabs = ({ product }) => {
     const [activeTab, setActiveTab] = useState("spacification");
@@ -469,7 +467,7 @@ const ProductDetails = () => {
                     {/* ####################################################### */}
 
                     <div>
-                        <ProAttributes product={product} />
+                        <ProductAttributes product={product} />
                     </div>
 
 

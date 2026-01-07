@@ -1,5 +1,6 @@
-import React from 'react';
 import { FaBoxOpen } from 'react-icons/fa';
+import DownloadInvoice from './DownloadInvoice';
+import { Link } from 'react-router-dom';
 
 const MyOrders = ({
     orders,
@@ -12,14 +13,16 @@ const MyOrders = ({
     getTransactionId,
     getPaymentMethod,
     formatAddress,
-    downloadInvoice,
 }) => {
+
     return (
         <div className="bg-white border rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <FaBoxOpen /> My Orders
                 </h2>
+                <p className="text-sm text-gray-500">Total Orders: {orders.length}</p>
+
             </div>
             {ordersLoading && (
                 <div className="flex justify-center items-center py-12">
@@ -75,8 +78,11 @@ const MyOrders = ({
                                     <tbody>
                                         {(order.items || order.order_items || []).map((it) => (
                                             <tr key={it.id || `${order.id}-${it.product?.id || it.product_name}`} className="border-b last:border-0">
-                                                <td className="py-2 pr-3">
-                                                    {it.product?.name || it.product_name}
+                                                <td className="py-2 pr-3 font-semibold">
+                                                    <Link to={`/products/${it.product?.slug || it.product_name}`}>{it.product?.name || it.product_name}
+                                                    <span className="ml-1 text-xs text-gray-500">
+                                                        {it.variant?.color ? `${it.variant?.color}` : ''} {it.variant?.ram ? `${it.variant?.ram}GB` : ''}{it.variant?.storage ? `/${it.variant?.storage}GB` : ''}
+                                                    </span></Link>
                                                 </td>
                                                 <td className="py-2 pr-3">{it.quantity}</td>
                                                 <td className="py-2">৳ {it.unit_price ?? it.price}</td>
@@ -90,12 +96,7 @@ const MyOrders = ({
                                     <div className="font-medium">Shipping Address</div>
                                     <div>{formatAddress(order.shipping_address)}</div>
                                 </div>
-                                <button
-                                    onClick={() => downloadInvoice(order)}
-                                    className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
-                                >
-                                    Download Invoice
-                                </button>
+                                <DownloadInvoice order={order}/>
                             </div>
                         </div>
                     ))}

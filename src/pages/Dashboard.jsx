@@ -120,36 +120,6 @@ const Dashboard = () => {
         const filtered = parts.filter(Boolean);
         return filtered.length ? filtered.join(', ') : 'Not available';
     };
-    const downloadInvoice = async (order) => {
-        if (!order?.id) return;
-
-        try {
-            const res = await api.get(
-                `/orders/${order.id}/invoice/`,
-                { responseType: 'blob' }
-            );
-
-            const blob = new Blob([res.data], {
-                type: res.headers['content-type'] || 'application/pdf',
-            });
-
-            const url = window.URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `invoice_${order.id}.pdf`;
-
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.log(error);
-            console.error('Invoice download failed:', error);
-            alert('Unable to download invoice. Please try again.');
-        }
-    };
 
 
     // Check for order success state passed from checkout
@@ -425,7 +395,7 @@ const Dashboard = () => {
                             getTransactionId={getTransactionId}
                             getPaymentMethod={getPaymentMethod}
                             formatAddress={formatAddress}
-                            downloadInvoice={downloadInvoice}
+                            // downloadInvoice={downloadInvoice}
                             sortOrdersDesc={sortOrdersDesc}
                         />
                     )}
@@ -442,7 +412,7 @@ const Dashboard = () => {
                             getTransactionId={getTransactionId}
                             getPaymentMethod={getPaymentMethod}
                             formatAddress={formatAddress}
-                            downloadInvoice={downloadInvoice}
+                            // downloadInvoice={downloadInvoice}
                         />
                     )}
 
