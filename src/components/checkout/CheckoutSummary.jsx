@@ -12,7 +12,8 @@ const CheckoutSummary = ({
     onApplyVoucher,
     onAcceptedChange,
     onConfirmOrder,
-    onNavigateTerms
+    onNavigateTerms,
+    isPaymentValid = true
 }) => {
     const totalPayable = Math.max(
         0,
@@ -97,7 +98,7 @@ const CheckoutSummary = ({
 
             <button
                 className="mt-4 w-full px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center"
-                disabled={!accepted || loading}
+                disabled={!accepted || loading || !isPaymentValid}
                 onClick={onConfirmOrder}
             >
                 {loading ? (

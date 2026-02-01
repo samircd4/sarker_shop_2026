@@ -12,7 +12,7 @@ import CheckoutSummary from "../components/checkout/CheckoutSummary.jsx";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Checkout = () => {
-    const { cartItem, updateQuantity, deleteItem, setCartItem } = useCart();
+    const { cartItem, updateQuantity, deleteItem, clearCart } = useCart();
     const navigate = useNavigate();
 
     // Removed selection checkboxes for a cleaner mobile layout
@@ -181,7 +181,7 @@ const Checkout = () => {
             const response = await api.post('/orders/', orderPayload);
 
             toast.success("Order placed successfully!");
-            setCartItem([]); // Clear cart
+            clearCart(); // Use the official clearCart function
 
             const token = localStorage.getItem('access_token');
             if (token) {
@@ -301,6 +301,9 @@ const Checkout = () => {
                         onApplyVoucher={applyVoucher}
                         onAcceptedChange={(e) => setAccepted(e.target.checked)}
                         onConfirmOrder={handlePlaceOrder}
+                        isPaymentValid={
+                            (paymentDetails.paid_from && paymentDetails.transaction_id)
+                        }
                         onNavigateTerms={() => navigate("/terms")}
                     />
                 </div>

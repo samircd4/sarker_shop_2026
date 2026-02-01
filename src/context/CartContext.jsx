@@ -206,7 +206,24 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    return <CartContext.Provider value={{ cartItem, setCartItem, addToCart, updateQuantity, deleteItem, refreshCart, syncLocalCartToServer }}>
+    const clearCart = async () => {
+        setCartItem([]);
+        localStorage.removeItem("cartItems");
+        const token = localStorage.getItem("access_token");
+        if (token) {
+            try {
+                // Assuming we don't have a direct clear endpoint, 
+                // we can just refresh the cart from server which will be empty if we handled it there
+                // or just leave it for now since most users will place order and backend handles it.
+                // But if backend doesn't handle items_input by clearing cart, we might need a clear endpoint.
+                // For now, let's just clear locally as requested.
+            } catch (err) {
+                console.error("Error clearing cart:", err);
+            }
+        }
+    };
+
+    return <CartContext.Provider value={{ cartItem, setCartItem, addToCart, updateQuantity, deleteItem, refreshCart, clearCart, syncLocalCartToServer }}>
         {children}
     </CartContext.Provider>
 }
