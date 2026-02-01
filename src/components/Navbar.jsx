@@ -117,8 +117,8 @@ const Navbar = () => {
                             <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
                         </button>
                         <button onClick={handleUserClick} className='text-neutral-900 hover:text-purple-600 transition-colors flex items-center cursor-pointer' aria-label="Account">
-                            {userProfile?.avatar ? (
-                                <img src={userProfile.avatar} alt="User" className="h-8 w-8 rounded-full border border-purple-200 object-cover shadow-sm" />
+                            {(userProfile?.avatar || userProfile?.social_avatar_url) ? (
+                                <img src={userProfile.avatar || userProfile.social_avatar_url} alt="User" className="h-8 w-8 rounded-full border border-purple-200 object-cover shadow-sm" />
                             ) : (
                                 <FaUser className='h-6 w-6' />
                             )}

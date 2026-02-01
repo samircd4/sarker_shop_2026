@@ -274,6 +274,7 @@ const Account = () => {
                             <div className="relative">
                                 <FacebookLogin
                                     appId={FB_APP_ID}
+                                    version="13.0"
                                     onSuccess={handleFacebookResponse}
                                     onFailure={() => toast.error("Facebook login failed")}
                                     render={(renderProps) => (

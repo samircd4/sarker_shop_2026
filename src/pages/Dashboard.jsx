@@ -115,14 +115,17 @@ const Dashboard = () => {
         })
             .then(res => {
                 if (res.data) {
+                    const displayName = res.data.name || res.data.full_name || res.data.username || 'User';
+                    const displayAvatar = res.data.avatar || res.data.social_avatar_url || res.data.image || '';
+
                     setUser({
-                        name: res.data.name || res.data.username || 'User',
+                        name: displayName,
                         email: res.data.email || ''
                     });
-                    setProfileName(res.data.name || res.data.username || '');
+                    setProfileName(displayName);
                     setProfileEmail(res.data.email || '');
                     setProfilePhone(res.data.phone_number || res.data.phone || '');
-                    setProfileImagePreview(res.data.avatar || res.data.image || '');
+                    setProfileImagePreview(displayAvatar);
                 }
             })
             .catch(err => {
