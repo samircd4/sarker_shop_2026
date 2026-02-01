@@ -7,6 +7,9 @@ import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
 import { useCart } from '../context/CartContext'
 import CartPanel from './CartPanel'
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Navbar = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -14,9 +17,28 @@ const Navbar = () => {
     const [animationClass, setAnimationClass] = useState(''); // New state for animation class
     const [searchFocused, setSearchFocused] = useState(false); // NEW
     const [cartOpen, setCartOpen] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
     const { cartItem } = useCart();
     const navigate = useNavigate();
     const totalCount = cartItem.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            axios.get(`${API_URL}/customers/me/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+                .then(res => {
+                    setUserProfile(res.data);
+                })
+                .catch(err => {
+                    console.error("Navbar profile fetch error:", err);
+                    setUserProfile(null);
+                });
+        } else {
+            setUserProfile(null);
+        }
+    }, [navigate]); // Re-fetch on navigation which often happens after login/logout
 
     const handleUserClick = (e) => {
         e.preventDefault();
@@ -93,8 +115,12 @@ const Navbar = () => {
                             <IoCartOutline className='h-7 w-7' />
                             <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
                         </button>
-                        <button onClick={handleUserClick} className='text-neutral-900 hover:text-purple-600 transition-colors' aria-label="Account">
-                            <FaUser className='h-6 w-6' />
+                        <button onClick={handleUserClick} className='text-neutral-900 hover:text-purple-600 transition-colors flex items-center' aria-label="Account">
+                            {userProfile?.avatar ? (
+                                <img src={userProfile.avatar} alt="User" className="h-8 w-8 rounded-full border border-purple-200 object-cover shadow-sm" />
+                            ) : (
+                                <FaUser className='h-6 w-6' />
+                            )}
                         </button>
                     </nav>
                 </div>

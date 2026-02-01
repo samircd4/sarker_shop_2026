@@ -23,6 +23,7 @@ const Dashboard = () => {
     const [profileEmail, setProfileEmail] = useState('');
     const [profilePhone, setProfilePhone] = useState('');
     const [profileImagePreview, setProfileImagePreview] = useState('');
+    const [profileImageFile, setProfileImageFile] = useState(null);
     const [savingProfile, setSavingProfile] = useState(false);
     const [addresses, setAddresses] = useState([]);
     const [addressesLoading, setAddressesLoading] = useState(false);
@@ -137,21 +138,46 @@ const Dashboard = () => {
     const onProfileImageChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setProfileImageFile(file);
         const url = URL.createObjectURL(file);
         setProfileImagePreview(url);
     };
 
-    const onProfileSave = () => {
+    const onProfileSave = async () => {
         if (!profileName || !profileEmail) {
             toast.error('Name and email are required');
             return;
         }
         setSavingProfile(true);
-        setTimeout(() => {
-            toast.success('Profile updated (UI only). API integration pending.');
+
+        const formData = new FormData();
+        formData.append('name', profileName);
+        formData.append('email', profileEmail);
+        formData.append('phone_number', profilePhone);
+        if (profileImageFile) {
+            formData.append('avatar', profileImageFile);
+        }
+
+        try {
+            const res = await api.put('/customers/me/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            toast.success('Profile updated successfully');
+            setUser({
+                name: res.data.name || res.data.username || 'User',
+                email: res.data.email || ''
+            });
+            setProfileImagePreview(res.data.avatar || '');
+            setProfileImageFile(null);
+        } catch (err) {
+            console.error("Profile save error:", err);
+            const msg = err.response?.data?.detail || 'Failed to update profile';
+            toast.error(msg);
+        } finally {
             setSavingProfile(false);
-            setUser({ name: profileName || 'User', email: profileEmail || '' });
-        }, 600);
+        }
     };
 
     const fetchAddresses = async () => {
@@ -334,8 +360,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setActiveTab('dashboard')}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'dashboard'
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    ? 'bg-purple-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
                             >
                                 <FaChartPie className={activeTab === 'dashboard' ? 'text-white' : 'text-purple-500'} />
@@ -345,8 +371,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setActiveTab('orders')}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'orders'
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    ? 'bg-purple-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
                             >
                                 <FaShoppingBag className={activeTab === 'orders' ? 'text-white' : 'text-purple-500'} />
@@ -356,8 +382,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setActiveTab('address')}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'address'
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    ? 'bg-purple-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
                             >
                                 <FaMapMarkerAlt className={activeTab === 'address' ? 'text-white' : 'text-purple-500'} />
@@ -367,8 +393,8 @@ const Dashboard = () => {
                             <button
                                 onClick={() => setActiveTab('profile')}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile'
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    ? 'bg-purple-600 text-white shadow-md'
+                                    : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
                             >
                                 <FaCog className={activeTab === 'profile' ? 'text-white' : 'text-purple-500'} />
