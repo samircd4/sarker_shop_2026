@@ -5,11 +5,16 @@ import 'react-toastify/dist/ReactToastify.css'
 import './styles/toastify-overrides.css'
 import App from './App.jsx'
 import { CartProvider } from './context/CartContext.jsx'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 createRoot(document.getElementById('root')).render(
-//   <StrictMode>
-    <CartProvider>
-      <App />
-    </CartProvider>
-//   </StrictMode>,
+    //   <StrictMode>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <CartProvider>
+            <App />
+        </CartProvider>
+    </GoogleOAuthProvider>
+    //   </StrictMode>,
 )

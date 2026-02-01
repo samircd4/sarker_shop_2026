@@ -5,8 +5,11 @@ import axios from 'axios';
 import { useCart } from '../context/CartContext.jsx';
 import { toast } from 'react-toastify';
 import api from '../api/client';
+import { useGoogleLogin } from '@react-oauth/google';
+import FacebookLogin from 'react-facebook-login-lite';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const FB_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 
 const Account = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -20,6 +23,51 @@ const Account = () => {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+
+    const googleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setLoading(true);
+            try {
+                const res = await axios.post(`${API_URL}/auth/google/`, {
+                    access_token: tokenResponse.access_token
+                });
+                localStorage.setItem('access_token', res.data.access_token || res.data.access);
+                localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
+
+                await syncLocalCartToServer();
+                toast.success("Logged in with Google!");
+                navigate('/dashboard');
+            } catch (err) {
+                console.error("Google login error:", err);
+                toast.error("Google login failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        },
+        onError: () => toast.error("Google login permission denied"),
+    });
+
+    const handleFacebookResponse = async (response) => {
+        if (response.authResponse) {
+            setLoading(true);
+            try {
+                const res = await axios.post(`${API_URL}/auth/facebook/`, {
+                    access_token: response.authResponse.accessToken
+                });
+                localStorage.setItem('access_token', res.data.access_token || res.data.access);
+                localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
+
+                await syncLocalCartToServer();
+                toast.success("Logged in with Facebook!");
+                navigate('/dashboard');
+            } catch (err) {
+                console.error("Facebook login error:", err);
+                toast.error("Facebook login failed. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
     const toggleMode = () => setIsLogin(!isLogin);
 
@@ -71,7 +119,7 @@ const Account = () => {
                 error.response?.data?.detail ||
                 JSON.stringify(error.response?.data) ||
                 "Authentication failed";
-            toast.error(msg);         
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
@@ -212,6 +260,7 @@ const Account = () => {
                             <div>
                                 <button
                                     type="button"
+                                    onClick={() => googleLogin()}
                                     className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
                                 >
                                     <FaGoogle className="h-5 w-5 text-red-500" />
@@ -219,14 +268,22 @@ const Account = () => {
                                 </button>
                             </div>
 
-                            <div>
-                                <button
-                                    type="button"
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-                                >
-                                    <FaFacebook className="h-5 w-5 text-blue-600" />
-                                    <span className="ml-2">Facebook</span>
-                                </button>
+                            <div className="relative">
+                                <FacebookLogin
+                                    appId={FB_APP_ID}
+                                    onSuccess={handleFacebookResponse}
+                                    onFailure={() => toast.error("Facebook login failed")}
+                                    render={(renderProps) => (
+                                        <button
+                                            type="button"
+                                            onClick={renderProps.onClick}
+                                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <FaFacebook className="h-5 w-5 text-blue-600" />
+                                            <span className="ml-2">Facebook</span>
+                                        </button>
+                                    )}
+                                />
                             </div>
                         </div>
                     </div>
