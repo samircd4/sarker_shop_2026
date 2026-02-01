@@ -4,10 +4,10 @@ import axios from "axios";
 import api from "../api/client";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { FaHome, FaBuilding, FaCheck, FaMobileAlt } from "react-icons/fa";
-import { FaMoneyBillWave } from "react-icons/fa";
-import { SiVisa, SiMastercard } from "react-icons/si";
 import ItemTable from "../components/cart/ItemTable.jsx";
+import DeliveryAddress from "../components/checkout/DeliveryAddress.jsx";
+import PaymentMethod from "../components/checkout/PaymentMethod.jsx";
+import CheckoutSummary from "../components/checkout/CheckoutSummary.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -29,6 +29,10 @@ const Checkout = () => {
 
     // Payment
     const [paymentMethod, setPaymentMethod] = useState("cod");
+    const [paymentDetails, setPaymentDetails] = useState({
+        paid_from: "",
+        transaction_id: "",
+    });
 
     // Voucher/discount
     const [voucher, setVoucher] = useState("");
@@ -116,7 +120,7 @@ const Checkout = () => {
             0
         );
     }, [cartItem]);
-    const deliveryCharge = 70;
+    const deliveryCharge = 120;
     const deliveryDiscount = 0;
     const totalPayable = Math.max(
         0,
@@ -151,7 +155,8 @@ const Checkout = () => {
                 district: district,
                 sub_district: subDistrict,
                 address_type: addressType,
-                payment_method: paymentMethod
+                payment_method: paymentMethod,
+                payment_details: paymentMethod !== "cod" ? paymentDetails : null,
             };
 
             const response = await api.post('/orders/', orderPayload);
@@ -233,302 +238,50 @@ const Checkout = () => {
                         onRemove={(id, vid) => deleteItem(id, vid)}
                     />
 
-                    {/* Delivery Address */}
-                    <div className="mt-6 bg-white border rounded-lg p-4">
-                        <h2 className="text-xl font-bold mb-4 text-neutral-800">
-                            Delivery Address
-                        </h2>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Email <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="email"
-                                placeholder="Email Address"
-                                className="w-full border rounded-md px-3 py-2"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Ex:01xxxxxxxxx"
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Division <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={division}
-                                    onChange={(e) => setDivision(e.target.value)}
-                                >
-                                    <option value="">Select Division</option>
-                                    <option>Dhaka</option>
-                                    <option>Chattogram</option>
-                                    <option>Rajshahi</option>
-                                    <option>Khulna</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    District <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={district}
-                                    onChange={(e) => setDistrict(e.target.value)}
-                                >
-                                    <option value="">Select District</option>
-                                    {/* Ensure auto-filled value is shown if not in the list */}
-                                    {district && !["Dhaka", "Gazipur", "Narayanganj", "Kishoreganj", "Comilla", "Sylhet"].includes(district) && (
-                                        <option value={district}>{district}</option>
-                                    )}
-                                    <option>Dhaka</option>
-                                    <option>Gazipur</option>
-                                    <option>Narayanganj</option>
-                                    <option>Kishoreganj</option>
-                                    <option>Comilla</option>
-                                    <option>Sylhet</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Sub District <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    className="w-full border rounded-md px-3 py-2"
-                                    value={subDistrict}
-                                    onChange={(e) => setSubDistrict(e.target.value)}
-                                >
-                                    <option value="">Select Sub District</option>
-                                    {/* Ensure auto-filled value is shown if not in the list */}
-                                    {subDistrict && !["Uttara", "Banani", "Mirpur", "Kishoreganj", "Sadar"].includes(subDistrict) && (
-                                        <option value={subDistrict}>{subDistrict}</option>
-                                    )}
-                                    <option>Uttara</option>
-                                    <option>Banani</option>
-                                    <option>Mirpur</option>
-                                    <option>Kishoreganj</option>
-                                    <option>Sadar</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Address <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="House no. / Building / Street"
-                                className="w-full border rounded-md px-3 py-2"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                className={`px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 ${addressType === "home" ? "" : "opacity-70"
-                                    }`}
-                                onClick={() => setAddressType("home")}
-                            >
-                                <FaHome /> Home{" "}
-                                {addressType === "home" && <FaCheck className="ml-1" />}
-                            </button>
-                            <button
-                                className={`px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 ${addressType === "office" ? "" : "opacity-70"
-                                    }`}
-                                onClick={() => setAddressType("office")}
-                            >
-                                <FaBuilding /> Office{" "}
-                                {addressType === "office" && <FaCheck className="ml-1" />}
-                            </button>
-                        </div>
-                    </div>
+                    <DeliveryAddress
+                        email={email}
+                        fullName={fullName}
+                        phone={phone}
+                        division={division}
+                        district={district}
+                        subDistrict={subDistrict}
+                        address={address}
+                        addressType={addressType}
+                        onEmailChange={(e) => setEmail(e.target.value)}
+                        onFullNameChange={(e) => setFullName(e.target.value)}
+                        onPhoneChange={(e) => setPhone(e.target.value)}
+                        onDivisionChange={(e) => setDivision(e.target.value)}
+                        onDistrictChange={(e) => setDistrict(e.target.value)}
+                        onSubDistrictChange={(e) => setSubDistrict(e.target.value)}
+                        onAddressChange={(e) => setAddress(e.target.value)}
+                        onAddressTypeChange={setAddressType}
+                    />
                 </div>
 
                 {/* Right column: Payment + Summary */}
                 <div className="space-y-6">
-                    {/* Payment options */}
-                    <div className="bg-white border rounded-lg p-4">
-                        <h3 className="text-lg font-semibold mb-3 text-neutral-800">
-                            Select Payment Method
-                        </h3>
-                        <div className="space-y-3">
-                            <label className="flex items-center justify-between p-2 rounded">
-                                <span className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        name="pm"
-                                        value="cod"
-                                        checked={paymentMethod === "cod"}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                    />
-                                    <span>Cash on Delivery</span>
-                                </span>
-                                <FaMoneyBillWave className="text-green-600" />
-                            </label>
-                            <label className="flex items-center justify-between p-2 rounded">
-                                <span className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        name="pm"
-                                        value="bkash"
-                                        checked={paymentMethod === "bkash"}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                    />
-                                    <span>Bkash</span>
-                                </span>
-                                <FaMobileAlt className="text-pink-500" />
-                            </label>
-                            <label className="flex items-center justify-between p-2 rounded">
-                                <span className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        name="pm"
-                                        value="nagad"
-                                        checked={paymentMethod === "nagad"}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                    />
-                                    <span>Nagad</span>
-                                </span>
-                                <FaMobileAlt className="text-orange-500" />
-                            </label>
-                            <label className="flex items-center justify-between p-2 rounded">
-                                <span className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        name="pm"
-                                        value="upay"
-                                        checked={paymentMethod === "upay"}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                    />
-                                    <span>Upay</span>
-                                </span>
-                                <FaMobileAlt className="text-yellow-600" />
-                            </label>
-                            <label className="flex items-center justify-between p-2 rounded">
-                                <span className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        name="pm"
-                                        value="card_mfs"
-                                        checked={paymentMethod === "card_mfs"}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                    />
-                                    <span>Card & MFS</span>
-                                </span>
-                                <span className="flex items-center gap-2">
-                                    <SiVisa className="text-blue-600" />
-                                    <SiMastercard className="text-orange-600" />
-                                </span>
-                            </label>
-                        </div>
-                    </div>
+                    <PaymentMethod
+                        paymentMethod={paymentMethod}
+                        onChange={setPaymentMethod}
+                        paymentDetails={paymentDetails}
+                        onDetailsChange={setPaymentDetails}
+                        totalPayable={totalPayable}
+                    />
 
-                    {/* Summary */}
-                    <div className="bg-white border rounded-lg p-4 h-fit">
-                        <h2 className="text-lg font-semibold mb-3 text-neutral-800">
-                            Checkout Summary
-                        </h2>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Subtotal</span>
-                                <span className="font-medium">৳ {subtotal.toFixed(0)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Delivery Charge</span>
-                                <span className="font-medium">৳ {deliveryCharge}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Delivery Charge Discount</span>
-                                <span className="font-medium">৳ {deliveryDiscount}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Discount</span>
-                                <span className="font-medium">৳ {discount}</span>
-                            </div>
-                        </div>
-
-                        {/* Voucher */}
-                        <div className="mt-3 flex items-center gap-2">
-                            <input
-                                className="flex-1 border rounded-md px-3 py-2 text-sm"
-                                placeholder="Have a voucher code"
-                                value={voucher}
-                                onChange={(e) => setVoucher(e.target.value)}
-                            />
-                            <button
-                                className="px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white"
-                                onClick={applyVoucher}
-                            >
-                                Apply
-                            </button>
-                        </div>
-
-                        <div className="border-t pt-3 mt-3">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-800 font-semibold">
-                                    Total Payable
-                                </span>
-                                <span className="text-gray-900 font-bold">
-                                    ৳ {totalPayable.toFixed(0)}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-3 text-sm">
-                            <label className="inline-flex items-start gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={accepted}
-                                    onChange={(e) => setAccepted(e.target.checked)}
-                                />
-                                <span>
-                                    * I agree to the{" "}
-                                    <a href="#" className="text-purple-600 underline">
-                                        terms and conditions
-                                    </a>
-                                </span>
-                            </label>
-                        </div>
-
-                        <button
-                            className="mt-4 w-full px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center"
-                            disabled={!accepted || loading}
-                            onClick={handlePlaceOrder}
-                        >
-                            {loading ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                            ) : (
-                                "Confirm Order"
-                            )}
-                        </button>
-                    </div>
+                    <CheckoutSummary
+                        subtotal={subtotal}
+                        deliveryCharge={deliveryCharge}
+                        deliveryDiscount={deliveryDiscount}
+                        discount={discount}
+                        voucher={voucher}
+                        accepted={accepted}
+                        loading={loading}
+                        onVoucherChange={(e) => setVoucher(e.target.value)}
+                        onApplyVoucher={applyVoucher}
+                        onAcceptedChange={(e) => setAccepted(e.target.checked)}
+                        onConfirmOrder={handlePlaceOrder}
+                        onNavigateTerms={() => navigate("/terms")}
+                    />
                 </div>
             </div>
         </div>

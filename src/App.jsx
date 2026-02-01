@@ -12,11 +12,14 @@ import Account from './pages/Account';
 import OrderSuccess from './pages/OrderSuccess';
 import CategoryPage from './pages/CategoryPage';
 import Dashboard from './pages/Dashboard';
+import Terms from './pages/Terms';
+import ScrollToTop from './components/ScrollToTop';
 
 
 
 const App = () => (
     <Router>
+        <ScrollToTop/>
         <Routes>
             <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
@@ -32,6 +35,7 @@ const App = () => (
                 <Route path="account" element={<Account />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="order-success" element={<OrderSuccess />} />
+                <Route path="terms" element={<Terms />} />
             </Route>
         </Routes>
     </Router>

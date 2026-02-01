@@ -1,12 +1,13 @@
 // src/components/CategoryList.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MdApps } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 
-const CategoryList = () => {
+const CategoryList = ({ onNavigate }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const listRef = useRef(null);
     const navigate = useNavigate();
 
     const slugify = (text) => {
@@ -23,7 +24,7 @@ const CategoryList = () => {
             try {
                 const response = await api.get(`/categories/`);
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
-                setCategories(data.slice(0, 8)); // Limit to first 8 to match design
+                setCategories(data); // Limit to first 8 to match design
                 setLoading(false);
             } catch (error) {
                 console.error("Error fetching categories:", error);
@@ -37,6 +38,14 @@ const CategoryList = () => {
     const handleCategoryClick = (cat) => {
         const slug = cat.slug || slugify(cat.name);
         navigate(`/category/${slug}`);
+        if (typeof onNavigate === 'function') onNavigate();
+    };
+
+    const handleMoreClick = () => {
+        if (listRef.current) {
+            listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
+            
+        }
     };
 
     if (loading) {
@@ -58,7 +67,7 @@ const CategoryList = () => {
                 <MdApps className="text-xl" />
                 <span>All Categories</span>
             </div>
-            <ul>
+            <ul ref={listRef} className="overflow-y-visible md:overflow-y-auto md:max-h-[440px] scrollbar-hide hide-scrollbar">
                 {categories.map(cat => (
                     <li
                         key={cat.id || cat.name}
@@ -72,14 +81,14 @@ const CategoryList = () => {
                                 className="w-5 h-5 object-contain"
                             />
                         ) : (
-                            <span className="text-lg">📱</span> // Fallback icon
+                            <span className="text-lg">📱</span> /* Fallback icon */
                         )}
                         <span className="truncate">{cat.name}</span>
                     </li>
                 ))}
-                <li>
+                <li className="sticky bottom-0 bg-white">
                     <button
-                        onClick={() => navigate('/categories')}
+                        onClick={handleMoreClick}
                         className='hidden sm:block w-full text-center p-2 bg-purple-600 text-white font-bold rounded cursor-pointer py-3'
                     >
                         More

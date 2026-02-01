@@ -115,7 +115,7 @@ const Navbar = () => {
                         </button>
 
                         <div className="flex-1 overflow-y-auto">
-                            <CategoryList />
+                            <CategoryList onNavigate={() => setDrawerOpen(false)} />
                         </div>
                     </div>
                 </div>

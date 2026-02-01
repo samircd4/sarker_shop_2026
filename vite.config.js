@@ -7,9 +7,7 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [
-      'localhost',
-      '.ngrok-free.app',
-      'll4m3z8j-5173.asse.devtunnels.ms',
+      'front.sarker.shop',
     ],
   },
 })
