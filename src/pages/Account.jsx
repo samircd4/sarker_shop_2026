@@ -38,8 +38,11 @@ const Account = () => {
                 toast.success("Logged in with Google!");
                 navigate('/dashboard');
             } catch (err) {
-                console.error("Google login error:", err);
-                toast.error("Google login failed. Please try again.");
+                console.error("Google login error details:", err.response?.data || err.message);
+                const errorMsg = err.response?.data?.non_field_errors?.[0] ||
+                    err.response?.data?.detail ||
+                    "Google login failed. Please try again.";
+                toast.error(errorMsg);
             } finally {
                 setLoading(false);
             }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCaretDown, FaUser } from 'react-icons/fa'
 import { IoCartOutline } from 'react-icons/io5'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { FiMenu } from 'react-icons/fi';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
@@ -20,6 +20,7 @@ const Navbar = () => {
     const [userProfile, setUserProfile] = useState(null);
     const { cartItem } = useCart();
     const navigate = useNavigate();
+    const location = useLocation();
     const totalCount = cartItem.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
     useEffect(() => {
@@ -38,7 +39,7 @@ const Navbar = () => {
         } else {
             setUserProfile(null);
         }
-    }, [navigate]); // Re-fetch on navigation which often happens after login/logout
+    }, [location.pathname]); // Re-fetch on navigation which often happens after login/logout
 
     const handleUserClick = (e) => {
         e.preventDefault();
