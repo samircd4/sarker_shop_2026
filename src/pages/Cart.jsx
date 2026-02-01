@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import ItemTable from '../components/cart/ItemTable.jsx'
+import EmptyCart from '../components/cart/EmptyCart.jsx'
 
 const Cart = () => {
     const { cartItem, updateQuantity, deleteItem } = useCart()
@@ -13,14 +14,15 @@ const Cart = () => {
     const total = subtotal + tax
 
     return (
-        <div className="max-w-6xl mx-auto px-4">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6 text-neutral-800">Shopping Cart</h1>
+        <div className="max-w-6xl mx-auto px-4 min-h-[60vh]">
+            <h1 className="text-2xl md:text-3xl font-bold mb-8 text-neutral-800 uppercase tracking-tight">Shopping Cart</h1>
 
             {cartItem.length === 0 ? (
-                <div className="bg-white border rounded-lg p-8 text-center">
-                    <p className="text-gray-600 mb-4">Your cart is empty.</p>
-                    <Link to="/products" className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-md">Continue Shopping</Link>
-                </div>
+                <EmptyCart
+                    title="Your cart is empty"
+                    description="Looks like you haven't added any premium products to your cart yet. Let's find something amazing for you!"
+                    buttonText="START SHOPPING"
+                />
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
