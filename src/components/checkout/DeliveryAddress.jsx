@@ -1,5 +1,6 @@
-import React from "react";
-import { FaHome, FaBuilding, FaCheck } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaHome, FaBuilding, FaCheck, FaChevronDown } from "react-icons/fa";
+import api from "../../api/client";
 
 const DeliveryAddress = ({
     email,
@@ -17,13 +18,121 @@ const DeliveryAddress = ({
     onDistrictChange,
     onSubDistrictChange,
     onAddressChange,
-    onAddressTypeChange
+    onAddressTypeChange,
+    savedAddresses = [],
+    onAddressSelect
 }) => {
+    const [divisionsList, setDivisionsList] = useState([]);
+    const [districtsList, setDistrictsList] = useState([]);
+    const [subDistrictsList, setSubDistrictsList] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Fetch Divisions on Mount
+    useEffect(() => {
+        api.get('/divisions/')
+            .then(res => setDivisionsList(res.data))
+            .catch(err => console.error("Error fetching divisions", err));
+    }, []);
+
+    // Fetch Districts when Division changes
+    useEffect(() => {
+        if (division) {
+            const selectedDiv = divisionsList.find(d => d.name === division);
+            if (selectedDiv) {
+                api.get(`/districts/?division_id=${selectedDiv.id}`)
+                    .then(res => setDistrictsList(res.data))
+                    .catch(err => console.error("Error fetching districts", err));
+            }
+        } else {
+            setDistrictsList([]);
+        }
+    }, [division, divisionsList]);
+
+    // Fetch SubDistricts when District changes
+    useEffect(() => {
+        if (district) {
+            const selectedDist = districtsList.find(d => d.name === district);
+            if (selectedDist) {
+                api.get(`/sub-districts/?district_id=${selectedDist.id}`)
+                    .then(res => setSubDistrictsList(res.data))
+                    .catch(err => console.error("Error fetching sub-districts", err));
+            }
+        } else {
+            setSubDistrictsList([]);
+        }
+    }, [district, districtsList]);
+
     return (
         <div className="mt-6 bg-white border rounded-lg p-4">
-            <h2 className="text-xl font-bold mb-4 text-neutral-800">
-                Delivery Address
-            </h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
+                <h2 className="text-xl font-bold text-neutral-800">
+                    Delivery Address
+                </h2>
+
+                {savedAddresses.length > 0 && (
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="bg-purple-50 text-purple-700 px-4 py-2 rounded-md border border-purple-200 text-sm font-semibold flex items-center gap-2 hover:bg-purple-100 transition-colors"
+                        >
+                            Use Saved Address <FaChevronDown className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isDropdownOpen && (
+                            <>
+                                <div
+                                    className="fixed inset-0 z-10"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                ></div>
+                                <div className="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-xl z-20 max-h-96 overflow-y-auto p-2 space-y-2">
+                                    <div className="text-xs font-bold text-gray-400 px-2 py-1 uppercase border-b mb-1">
+                                        Your Saved Addresses
+                                    </div>
+                                    {savedAddresses.map((addr) => {
+                                        const isSelected =
+                                            addr.full_name === fullName &&
+                                            addr.phone === phone &&
+                                            addr.address === address &&
+                                            addr.division === division &&
+                                            addr.district === district &&
+                                            addr.sub_district === subDistrict;
+
+                                        return (
+                                            <div
+                                                key={addr.id}
+                                                onClick={() => {
+                                                    onAddressSelect(addr);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`p-3 border rounded-lg cursor-pointer transition-all hover:border-purple-500 hover:bg-purple-50 group ${isSelected ? 'border-purple-500 bg-purple-50' : ''
+                                                    }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] font-bold uppercase py-0.5 px-1.5 rounded ${isSelected ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700'}`}>
+                                                            {addr.address_type}
+                                                        </span>
+                                                        {isSelected && <FaCheck className="text-purple-600 text-xs" />}
+                                                    </div>
+                                                    {addr.is_default && (
+                                                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold">DEFAULT</span>
+                                                    )}
+                                                </div>
+                                                <div className={`text-sm font-bold group-hover:text-purple-800 ${isSelected ? 'text-purple-800' : 'text-gray-800'}`}>{addr.full_name}</div>
+                                                <div className="text-xs text-gray-500">{addr.phone}</div>
+                                                <div className="text-xs text-gray-600 line-clamp-2 mt-1">
+                                                    {addr.address}, {addr.sub_district}, {addr.district}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
+            </div>
+
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email <span className="text-red-500">*</span>
@@ -71,13 +180,19 @@ const DeliveryAddress = ({
                     <select
                         className="w-full border rounded-md px-3 py-2"
                         value={division}
-                        onChange={onDivisionChange}
+                        onChange={(e) => {
+                            onDivisionChange(e);
+                            // Reset dependent fields
+                            onDistrictChange({ target: { value: "" } });
+                            onSubDistrictChange({ target: { value: "" } });
+                        }}
                     >
                         <option value="">Select Division</option>
-                        <option>Dhaka</option>
-                        <option>Chattogram</option>
-                        <option>Rajshahi</option>
-                        <option>Khulna</option>
+                        {divisionsList.map((div) => (
+                            <option key={div.id} value={div.name}>
+                                {div.name} / {div.bn_name}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div>
@@ -87,18 +202,18 @@ const DeliveryAddress = ({
                     <select
                         className="w-full border rounded-md px-3 py-2"
                         value={district}
-                        onChange={onDistrictChange}
+                        onChange={(e) => {
+                            onDistrictChange(e);
+                            onSubDistrictChange({ target: { value: "" } });
+                        }}
+                        disabled={!division}
                     >
                         <option value="">Select District</option>
-                        {district && !["Dhaka", "Gazipur", "Narayanganj", "Kishoreganj", "Comilla", "Sylhet"].includes(district) && (
-                            <option value={district}>{district}</option>
-                        )}
-                        <option>Dhaka</option>
-                        <option>Gazipur</option>
-                        <option>Narayanganj</option>
-                        <option>Kishoreganj</option>
-                        <option>Comilla</option>
-                        <option>Sylhet</option>
+                        {districtsList.map((dist) => (
+                            <option key={dist.id} value={dist.name}>
+                                {dist.name} / {dist.bn_name}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div>
@@ -109,16 +224,14 @@ const DeliveryAddress = ({
                         className="w-full border rounded-md px-3 py-2"
                         value={subDistrict}
                         onChange={onSubDistrictChange}
+                        disabled={!district}
                     >
                         <option value="">Select Sub District</option>
-                        {subDistrict && !["Uttara", "Banani", "Mirpur", "Kishoreganj", "Sadar"].includes(subDistrict) && (
-                            <option value={subDistrict}>{subDistrict}</option>
-                        )}
-                        <option>Uttara</option>
-                        <option>Banani</option>
-                        <option>Mirpur</option>
-                        <option>Kishoreganj</option>
-                        <option>Sadar</option>
+                        {subDistrictsList.map((sub) => (
+                            <option key={sub.id} value={sub.name}>
+                                {sub.name} / {sub.bn_name}
+                            </option>
+                        ))}
                     </select>
                 </div>
             </div>

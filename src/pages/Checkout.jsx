@@ -26,6 +26,18 @@ const Checkout = () => {
     const [division, setDivision] = useState("");
     const [district, setDistrict] = useState("");
     const [subDistrict, setSubDistrict] = useState("");
+    const [savedAddresses, setSavedAddresses] = useState([]);
+
+    const handleAddressSelect = (addr) => {
+        if (addr.full_name) setFullName(addr.full_name);
+        if (addr.phone) setPhone(addr.phone);
+        if (addr.email) setEmail(addr.email); // Some addresses might have specific email? Usually not in model, but for safety.
+        if (addr.address) setAddress(addr.address);
+        if (addr.division) setDivision(addr.division);
+        if (addr.district) setDistrict(addr.district);
+        if (addr.sub_district) setSubDistrict(addr.sub_district);
+        if (addr.address_type) setAddressType(addr.address_type.toLowerCase());
+    };
 
     // Payment
     const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -83,6 +95,7 @@ const Checkout = () => {
                     const addresses = Array.isArray(res.data) ? res.data : (res.data.results || []);
 
                     if (addresses.length > 0) {
+                        setSavedAddresses(addresses);
                         let foundAddress = null;
 
                         // Priority 1: Default address
@@ -94,16 +107,7 @@ const Checkout = () => {
                         }
 
                         if (foundAddress) {
-                            if (foundAddress.address) setAddress(foundAddress.address);
-                            if (foundAddress.division) setDivision(foundAddress.division);
-                            if (foundAddress.district) setDistrict(foundAddress.district);
-                            if (foundAddress.sub_district) setSubDistrict(foundAddress.sub_district);
-
-                            // Also override name/phone if present in address and not set by profile
-                            // Or prefer address details for shipping? Usually yes.
-                            if (foundAddress.full_name) setFullName(foundAddress.full_name);
-                            if (foundAddress.phone) setPhone(foundAddress.phone);
-                            if (foundAddress.address_type) setAddressType(foundAddress.address_type.toLowerCase());
+                            handleAddressSelect(foundAddress);
                         }
                     }
                 })
@@ -145,6 +149,17 @@ const Checkout = () => {
             // Create Order Payload
             // Sending address details directly for guest/new address
             // Using specific keys required by backend for guest checkout: full_name, shipping_address
+            // Prepare Final Payment Details
+            let finalPaymentDetails = { ...paymentDetails };
+
+            // For COD, the amount is usually the delivery charge (120) as per UI
+            if (paymentMethod === 'cod') {
+                finalPaymentDetails.amount = 120;
+            } else if (!finalPaymentDetails.amount) {
+                // If not COD and amount missing, maybe default to total? 
+                // But usually user inputs it. Leaving as is if user didn't input.
+            }
+
             const orderPayload = {
                 items_input: itemsInput,
                 email: email,
@@ -155,8 +170,12 @@ const Checkout = () => {
                 district: district,
                 sub_district: subDistrict,
                 address_type: addressType,
+
                 payment_method: paymentMethod,
-                payment_details: paymentMethod !== "cod" ? paymentDetails : null,
+
+                // Send details if we have any relevant info (trx, paid_from, or amount)
+                // We send it even for COD now because user inputs "Paid From" / "Trx ID" for delivery fee
+                payment_details: finalPaymentDetails,
             };
 
             const response = await api.post('/orders/', orderPayload);
@@ -255,6 +274,8 @@ const Checkout = () => {
                         onSubDistrictChange={(e) => setSubDistrict(e.target.value)}
                         onAddressChange={(e) => setAddress(e.target.value)}
                         onAddressTypeChange={setAddressType}
+                        savedAddresses={savedAddresses}
+                        onAddressSelect={handleAddressSelect}
                     />
                 </div>
 

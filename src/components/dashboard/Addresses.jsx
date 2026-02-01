@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../api/client';
 
 const Addresses = ({
     addresses,
     addressesLoading,
     addressesError,
-    BD_REGIONS,
     addrFullName,
     setAddrFullName,
     addrPhone,
@@ -28,6 +28,45 @@ const Addresses = ({
     handleDeleteAddress,
     handleSetDefault,
 }) => {
+    const [divisionsList, setDivisionsList] = useState([]);
+    const [districtsList, setDistrictsList] = useState([]);
+    const [subDistrictsList, setSubDistrictsList] = useState([]);
+
+    // Fetch Divisions on Mount
+    useEffect(() => {
+        api.get('/divisions/')
+            .then(res => setDivisionsList(res.data))
+            .catch(err => console.error("Error fetching divisions", err));
+    }, []);
+
+    // Fetch Districts when Division changes
+    useEffect(() => {
+        if (addrDivision) {
+            const selectedDiv = divisionsList.find(d => d.name === addrDivision);
+            if (selectedDiv) {
+                api.get(`/districts/?division_id=${selectedDiv.id}`)
+                    .then(res => setDistrictsList(res.data))
+                    .catch(err => console.error("Error fetching districts", err));
+            }
+        } else {
+            setDistrictsList([]);
+        }
+    }, [addrDivision, divisionsList]);
+
+    // Fetch SubDistricts when District changes
+    useEffect(() => {
+        if (addrDistrict) {
+            const selectedDist = districtsList.find(d => d.name === addrDistrict);
+            if (selectedDist) {
+                api.get(`/sub-districts/?district_id=${selectedDist.id}`)
+                    .then(res => setSubDistrictsList(res.data))
+                    .catch(err => console.error("Error fetching sub-districts", err));
+            }
+        } else {
+            setSubDistrictsList([]);
+        }
+    }, [addrDistrict, districtsList]);
+
     return (
         <div className="bg-white border rounded-lg p-6 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -126,12 +165,11 @@ const Addresses = ({
                                 }}
                             >
                                 <option value="">Select Division</option>
-                                {Object.keys(BD_REGIONS).map(div => (
-                                    <option key={div} value={div}>{div}</option>
+                                {divisionsList.map(div => (
+                                    <option key={div.id} value={div.name}>
+                                        {div.name} / {div.bn_name}
+                                    </option>
                                 ))}
-                                {addrDivision && !BD_REGIONS[addrDivision] && (
-                                    <option value={addrDivision}>{addrDivision}</option>
-                                )}
                             </select>
                         </div>
                         <div>
@@ -143,14 +181,14 @@ const Addresses = ({
                                     setAddrDistrict(e.target.value);
                                     setAddrSubDistrict('');
                                 }}
+                                disabled={!addrDivision}
                             >
                                 <option value="">Select District</option>
-                                {(BD_REGIONS[addrDivision]?.districts ? Object.keys(BD_REGIONS[addrDivision].districts) : []).map(d => (
-                                    <option key={d} value={d}>{d}</option>
+                                {districtsList.map(dist => (
+                                    <option key={dist.id} value={dist.name}>
+                                        {dist.name} / {dist.bn_name}
+                                    </option>
                                 ))}
-                                {addrDistrict && !(BD_REGIONS[addrDivision]?.districts?.[addrDistrict]) && (
-                                    <option value={addrDistrict}>{addrDistrict}</option>
-                                )}
                             </select>
                         </div>
                         <div>
@@ -159,14 +197,14 @@ const Addresses = ({
                                 className="w-full border rounded-md px-3 py-2"
                                 value={addrSubDistrict}
                                 onChange={(e) => setAddrSubDistrict(e.target.value)}
+                                disabled={!addrDistrict}
                             >
                                 <option value="">Select Sub District</option>
-                                {(BD_REGIONS[addrDivision]?.districts?.[addrDistrict] || []).map(s => (
-                                    <option key={s} value={s}>{s}</option>
+                                {subDistrictsList.map(sub => (
+                                    <option key={sub.id} value={sub.name}>
+                                        {sub.name} / {sub.bn_name}
+                                    </option>
                                 ))}
-                                {addrSubDistrict && !(BD_REGIONS[addrDivision]?.districts?.[addrDistrict]?.includes(addrSubDistrict)) && (
-                                    <option value={addrSubDistrict}>{addrSubDistrict}</option>
-                                )}
                             </select>
                         </div>
                         <div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaUser, FaCheckCircle } from 'react-icons/fa';
+import { FaUser, FaCheckCircle, FaChartPie, FaShoppingBag, FaMapMarkerAlt, FaCog, FaSignOutAlt } from 'react-icons/fa';
 import axios from 'axios';
 import api from '../api/client';
 import { toast } from 'react-toastify';
@@ -36,30 +36,6 @@ const Dashboard = () => {
     const [addrType, setAddrType] = useState('Home');
     const [addrDefault, setAddrDefault] = useState(false);
     const [editingAddressId, setEditingAddressId] = useState(null);
-    const BD_REGIONS = {
-        Dhaka: {
-            districts: {
-                Dhaka: ['Uttara', 'Banani', 'Mirpur'],
-                Gazipur: ['Sadar'],
-                Narayanganj: ['Sadar']
-            }
-        },
-        Chattogram: {
-            districts: {
-                Comilla: ['Sadar']
-            }
-        },
-        Rajshahi: {
-            districts: {
-                Rajshahi: ['Sadar']
-            }
-        },
-        Khulna: {
-            districts: {
-                Khulna: ['Sadar']
-            }
-        }
-    };
     const sortOrdersDesc = (arr) => {
         return [...arr].sort((a, b) => {
             const ad = new Date(a.created_at || a.created || a.createdAt || 0).getTime();
@@ -333,49 +309,84 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Sidebar / Menu */}
                 <div className="md:col-span-1 space-y-2">
-                    <div className="bg-white border rounded-lg p-4 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-                                <FaUser />
+                    <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                        {/* Profile Header */}
+                        <div className="bg-purple-600 p-6 text-white text-center">
+                            <div className="relative inline-block mb-3">
+                                {profileImagePreview ? (
+                                    <img
+                                        src={profileImagePreview}
+                                        alt="Profile"
+                                        className="w-20 h-20 rounded-full border-4 border-white/20 object-cover mx-auto"
+                                    />
+                                ) : (
+                                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm mx-auto">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                             </div>
-                            <div>
-                                <div className="font-semibold text-gray-800">Hello, {user.name}!</div>
-                                <div className="text-xs text-gray-500">Welcome back</div>
-                            </div>
+                            <div className="font-bold text-lg leading-tight">Hello, {user.name}!</div>
+                            <div className="text-purple-100 text-xs mt-1">Sarker Shop Customer</div>
                         </div>
-                        <nav className="space-y-1">
+
+                        {/* Navigation */}
+                        <nav className="p-3 space-y-1">
                             <button
                                 onClick={() => setActiveTab('dashboard')}
-                                className={`w-full text-left px-3 py-2 font-medium rounded ${activeTab === 'dashboard' ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'dashboard'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    }`}
                             >
-                                Dashboard
+                                <FaChartPie className={activeTab === 'dashboard' ? 'text-white' : 'text-purple-500'} />
+                                <span className="font-medium text-sm">Dashboard</span>
                             </button>
+
                             <button
                                 onClick={() => setActiveTab('orders')}
-                                className={`w-full text-left px-3 py-2 rounded ${activeTab === 'orders' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'orders'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    }`}
                             >
-                                My Orders
+                                <FaShoppingBag className={activeTab === 'orders' ? 'text-white' : 'text-purple-500'} />
+                                <span className="font-medium text-sm">My Orders</span>
                             </button>
+
                             <button
                                 onClick={() => setActiveTab('address')}
-                                className={`w-full text-left px-3 py-2 rounded ${activeTab === 'address' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'address'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    }`}
                             >
-                                Addresses
+                                <FaMapMarkerAlt className={activeTab === 'address' ? 'text-white' : 'text-purple-500'} />
+                                <span className="font-medium text-sm">Addresses</span>
                             </button>
+
                             <button
                                 onClick={() => setActiveTab('profile')}
-                                className="w-full text-left px-3 py-2 text-gray-600 hover:bg-gray-50 rounded">
-                                Profile Settings
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile'
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
+                                    }`}
+                            >
+                                <FaCog className={activeTab === 'profile' ? 'text-white' : 'text-purple-500'} />
+                                <span className="font-medium text-sm">Profile Settings</span>
                             </button>
+
+                            <div className="my-2 border-t border-gray-100"></div>
+
                             <button
                                 onClick={() => {
                                     localStorage.removeItem('access_token');
                                     localStorage.removeItem('refresh_token');
                                     navigate('/account');
                                 }}
-                                className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
                             >
-                                Logout
+                                <FaSignOutAlt />
+                                <span className="font-medium text-sm">Logout</span>
                             </button>
                         </nav>
                     </div>
@@ -412,7 +423,7 @@ const Dashboard = () => {
                             getTransactionId={getTransactionId}
                             getPaymentMethod={getPaymentMethod}
                             formatAddress={formatAddress}
-                            // downloadInvoice={downloadInvoice}
+                        // downloadInvoice={downloadInvoice}
                         />
                     )}
 
@@ -437,7 +448,6 @@ const Dashboard = () => {
                             addresses={addresses}
                             addressesLoading={addressesLoading}
                             addressesError={addressesError}
-                            BD_REGIONS={BD_REGIONS}
                             addrFullName={addrFullName}
                             setAddrFullName={setAddrFullName}
                             addrPhone={addrPhone}

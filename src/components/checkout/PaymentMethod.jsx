@@ -157,14 +157,7 @@ const PaymentMethod = ({
                         </div>
                     </div>
 
-                    <div className="mt-4">
-                        <button
-                            type="button"
-                            className="w-full bg-purple-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-purple-700 transition-colors cursor-pointer"
-                        >
-                            Submit Payment
-                        </button>
-                    </div>
+
 
                 </div>
             )}
