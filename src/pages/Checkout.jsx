@@ -15,6 +15,13 @@ const Checkout = () => {
     const { cartItem, updateQuantity, deleteItem, clearCart } = useCart();
     const navigate = useNavigate();
 
+    // Redirect to cart if empty
+    useEffect(() => {
+        if (cartItem.length === 0) {
+            navigate('/cart');
+        }
+    }, [cartItem.length, navigate]);
+
     // Removed selection checkboxes for a cleaner mobile layout
 
     // Delivery address

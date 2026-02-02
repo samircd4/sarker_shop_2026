@@ -1,4 +1,4 @@
-import { FaBoxOpen } from 'react-icons/fa';
+import { FaBoxOpen, FaTruck } from 'react-icons/fa';
 import DownloadInvoice from './DownloadInvoice';
 import { Link } from 'react-router-dom';
 
@@ -45,12 +45,9 @@ const MyOrders = ({
                         <div key={order.id} className="border rounded-lg p-4 bg-white border-gray-200">
                             <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
                                 <div className="space-y-1">
-                                    <Link
-                                        to={`/order-tracking/${order.id}`}
-                                        className="font-semibold text-gray-900 hover:text-purple-600 transition-colors cursor-pointer block"
-                                    >
+                                    <div className="font-semibold text-gray-900 block">
                                         Order #{order.id}
-                                    </Link>
+                                    </div>
                                     <div className="text-sm text-gray-500">{formatDate(order.created_at)}</div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -101,7 +98,16 @@ const MyOrders = ({
                                     <div className="font-medium">Shipping Address</div>
                                     <div>{formatAddress(order.shipping_address)}</div>
                                 </div>
-                                <DownloadInvoice order={order} />
+                                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                    <Link
+                                        to={`/order-tracking/${order.id}`}
+                                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                                    >
+                                        <FaTruck />
+                                        Track Order
+                                    </Link>
+                                    <DownloadInvoice order={order} />
+                                </div>
                             </div>
                         </div>
                     ))}

@@ -1,5 +1,6 @@
 import api from '../../api/client';
 import { useState } from 'react';
+import { FaFileDownload } from 'react-icons/fa';
 
 export default function DownloadInvoice({ order }) {
     const [loading, setLoading] = useState(false);
@@ -29,17 +30,16 @@ export default function DownloadInvoice({ order }) {
         <button
             onClick={downloadInvoice}
             disabled={loading}
-            className={`px-4 py-2 rounded-md text-white ${
-                loading
+            className={`px-4 py-2 rounded-md text-white flex items-center gap-2 ${loading
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-purple-600 hover:bg-purple-700 cursor-pointer'
-            }`}
+                }`}
         >
             {loading ? (
                 <>
                     Downloading…
                     <svg
-                        className="ml-2 h-4 w-4 animate-spin text-white inline-block"
+                        className="h-4 w-4 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -60,7 +60,10 @@ export default function DownloadInvoice({ order }) {
                     </svg>
                 </>
             ) : (
-                'Download Invoice'
+                <>
+                    <FaFileDownload />
+                    Download Invoice
+                </>
             )}
         </button>
     );

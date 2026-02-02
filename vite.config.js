@@ -5,9 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    host: true,
-    allowedHosts: [
-      'front.sarker.shop',
-    ],
+    host: "0.0.0.0",
+    port: 5173,
   },
 })

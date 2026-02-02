@@ -28,10 +28,10 @@ const Cart = () => {
                     <div className="lg:col-span-2">
                         <ItemTable
                             items={cartItem}
-                            onDecrease={(id) => updateQuantity(id, "decrease")}
-                            onIncrease={(id) => updateQuantity(id, "increase")}
-                            onSet={(id, qty) => updateQuantity(id, "set", qty)}
-                            onRemove={(id) => deleteItem(id)}
+                            onDecrease={(id, vid) => updateQuantity(id, "decrease", null, vid)}
+                            onIncrease={(id, vid) => updateQuantity(id, "increase", null, vid)}
+                            onSet={(id, qty, vid) => updateQuantity(id, "set", qty, vid)}
+                            onRemove={(id, vid) => deleteItem(id, vid)}
                         />
                     </div>
 

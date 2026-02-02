@@ -21,7 +21,9 @@ const ResponsiveMenu = () => {
             <div className="flex justify-around items-center py-4 px-2">
                 {menuItems.map((item) => {
                     const Icon = item.icon
-                    const isActive = location.pathname === item.path
+                    const isActive = item.path === '/account'
+                        ? (location.pathname === '/account' || location.pathname === '/dashboard')
+                        : location.pathname === item.path
 
                     return (
                         <Link

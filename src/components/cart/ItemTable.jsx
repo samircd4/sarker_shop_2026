@@ -36,7 +36,7 @@ const ItemTable = ({
                             <div className="text-sm md:text-base font-semibold text-gray-800">
                                 <Link to={`/products/${item.slug}`}>{item.name}</Link>
                                 <p className="ml-1 text-xs text-gray-500">
-                                            {item.variant?.color ? `${item.variant?.color}` : ''} {item.variant?.ram ? `${item.variant?.ram}GB` : ''}{item.variant?.storage ? `/${item.variant?.storage}GB` : ''}
+                                    {item.variant?.color ? `${item.variant?.color}` : ''} {item.variant?.ram ? `${item.variant?.ram}GB` : ''}{item.variant?.storage ? `/${item.variant?.storage}GB` : ''}
                                 </p>
                             </div>
                         </div>
