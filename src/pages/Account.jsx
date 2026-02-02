@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaGoogle } from 'react-icons/fa';
-import { Facebook } from 'lucide-react';
-
+import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import {
     User, Mail, Phone, Lock,
     Eye, EyeOff, ArrowRight
@@ -13,10 +11,63 @@ import { useCart } from '../context/CartContext.jsx';
 import { toast } from 'react-toastify';
 import api from '../api/client';
 import { useGoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login-lite';
 
-const API_URL = import.meta.env.VITE_API_URL;
-const FB_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
+
+// Internal component to safely use the useGoogleLogin hook
+const GoogleLoginSection = ({ API_URL, syncLocalCartToServer, setLoading }) => {
+    const navigate = useNavigate();
+
+    let googleLogin;
+    try {
+        googleLogin = useGoogleLogin({
+            onSuccess: async (tokenResponse) => {
+                setLoading(true);
+                try {
+                    const res = await axios.post(`${API_URL}/auth/google/`, {
+                        access_token: tokenResponse.access_token
+                    });
+                    localStorage.setItem('access_token', res.data.access_token || res.data.access);
+                    localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
+                    await syncLocalCartToServer();
+                    toast.success("Welcome back! Logged in with Google.");
+                    navigate('/dashboard');
+                } catch (err) {
+                    toast.error("Google login failed. Please try again.");
+                } finally {
+                    setLoading(false);
+                }
+            },
+            onError: () => toast.error("Google login failed"),
+        });
+    } catch (e) {
+        // Fallback if GoogleOAuthProvider is missing
+        return (
+            <div className="google-login-container opacity-50 cursor-not-allowed">
+                <button
+                    disabled
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gray-100 border border-gray-200 rounded-2xl text-sm font-bold text-gray-400"
+                >
+                    <FaGoogle className="text-gray-300" />
+                    Google (Disabled)
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="google-login-container">
+            <motion.button
+                whileHover={{ y: -2 }}
+                onClick={() => googleLogin()}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
+            >
+                <FaGoogle className="text-red-500 transition-transform group-hover:scale-110" />
+                Google
+            </motion.button>
+        </div>
+    );
+};
 
 const Account = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -29,47 +80,6 @@ const Account = () => {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-
-    const googleLogin = useGoogleLogin({
-        onSuccess: async (tokenResponse) => {
-            setLoading(true);
-            try {
-                const res = await axios.post(`${API_URL}/auth/google/`, {
-                    access_token: tokenResponse.access_token
-                });
-                localStorage.setItem('access_token', res.data.access_token || res.data.access);
-                localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
-                await syncLocalCartToServer();
-                toast.success("Welcome back! Logged in with Google.");
-                navigate('/dashboard');
-            } catch (err) {
-                toast.error("Google login failed. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        },
-        onError: () => toast.error("Google login failed"),
-    });
-
-    const handleFacebookResponse = async (response) => {
-        if (response.authResponse) {
-            setLoading(true);
-            try {
-                const res = await axios.post(`${API_URL}/auth/facebook/`, {
-                    access_token: response.authResponse.accessToken
-                });
-                localStorage.setItem('access_token', res.data.access_token || res.data.access);
-                localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
-                await syncLocalCartToServer();
-                toast.success("Welcome! Logged in with Facebook.");
-                navigate('/dashboard');
-            } catch (err) {
-                toast.error("Facebook login failed.");
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -191,7 +201,7 @@ const Account = () => {
                                 {isLogin ? "Don't have an account?" : 'Already a member?'}
                                 <button
                                     onClick={() => setIsLogin(!isLogin)}
-                                    className="ml-2 text-purple-600 font-bold hover:underline curso"
+                                    className="ml-2 text-purple-600 font-bold hover:underline cursor-pointer"
                                 >
                                     {isLogin ? 'Sign up for free' : 'Sign in'}
                                 </button>
@@ -302,30 +312,22 @@ const Account = () => {
 
                             <div className="mt-8 grid grid-cols-2 gap-4">
                                 {/* --- GOOGLE SECTION START --- */}
-                                <div className="google-login-container">
-                                    <motion.button
-                                        whileHover={{ y: -2 }}
-                                        onClick={() => googleLogin()}
-                                        className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
-                                    >
-                                        <FaGoogle className="text-red-500 transition-transform group-hover:scale-110" />
-                                        Google
-                                    </motion.button>
-                                </div>
+                                <GoogleLoginSection
+                                    API_URL={API_URL}
+                                    syncLocalCartToServer={syncLocalCartToServer}
+                                    setLoading={setLoading}
+                                />
                                 {/* --- GOOGLE SECTION END --- */}
 
                                 {/* --- FACEBOOK SECTION START --- */}
                                 <div>
                                     <motion.button
-                                    whileHover={{ y: -2 }}
-                                    className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
-                                    > <Facebook color="#222dc3" />
-                                    Facebook <span className="text-xs text-gray-400">beta</span>
+                                        whileHover={{ y: -2 }}
+                                        className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
+                                    > <FaFacebook color="#222dc3" />
+                                        Facebook <span className="text-xs text-gray-400">beta</span>
                                     </motion.button>
-                                     
                                 </div>
-
-
                                 {/* --- FACEBOOK SECTION END --- */}
 
                             </div>
