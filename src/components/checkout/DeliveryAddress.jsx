@@ -20,7 +20,8 @@ const DeliveryAddress = ({
     onAddressChange,
     onAddressTypeChange,
     savedAddresses = [],
-    onAddressSelect
+    onAddressSelect,
+    errors = {}
 }) => {
     const [divisionsList, setDivisionsList] = useState([]);
     const [districtsList, setDistrictsList] = useState([]);
@@ -138,12 +139,14 @@ const DeliveryAddress = ({
                     Email <span className="text-red-500">*</span>
                 </label>
                 <input
+                    id="email"
                     type="email"
                     placeholder="Email Address"
-                    className="w-full border rounded-md px-3 py-2"
+                    className={`w-full border rounded-md px-3 py-2 ${errors.email ? 'border-red-500 focus:ring-red-200' : ''}`}
                     value={email}
                     onChange={onEmailChange}
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -151,24 +154,28 @@ const DeliveryAddress = ({
                         Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
+                        id="fullName"
                         type="text"
                         placeholder="Full Name"
-                        className="w-full border rounded-md px-3 py-2"
+                        className={`w-full border rounded-md px-3 py-2 ${errors.fullName ? 'border-red-500 focus:ring-red-200' : ''}`}
                         value={fullName}
                         onChange={onFullNameChange}
                     />
+                    {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Phone <span className="text-red-500">*</span>
                     </label>
                     <input
+                        id="phone"
                         type="text"
                         placeholder="Ex:01xxxxxxxxx"
-                        className="w-full border rounded-md px-3 py-2"
+                        className={`w-full border rounded-md px-3 py-2 ${errors.phone ? 'border-red-500 focus:ring-red-200' : ''}`}
                         value={phone}
                         onChange={onPhoneChange}
                     />
+                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                 </div>
             </div>
 
@@ -178,7 +185,8 @@ const DeliveryAddress = ({
                         Division <span className="text-red-500">*</span>
                     </label>
                     <select
-                        className="w-full border rounded-md px-3 py-2"
+                        id="division"
+                        className={`w-full border rounded-md px-3 py-2 ${errors.division ? 'border-red-500 focus:ring-red-200' : ''}`}
                         value={division}
                         onChange={(e) => {
                             onDivisionChange(e);
@@ -194,13 +202,15 @@ const DeliveryAddress = ({
                             </option>
                         ))}
                     </select>
+                    {errors.division && <p className="text-red-500 text-xs mt-1">{errors.division}</p>}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         District <span className="text-red-500">*</span>
                     </label>
                     <select
-                        className="w-full border rounded-md px-3 py-2"
+                        id="district"
+                        className={`w-full border rounded-md px-3 py-2 ${errors.district ? 'border-red-500 focus:ring-red-200' : ''}`}
                         value={district}
                         onChange={(e) => {
                             onDistrictChange(e);
@@ -215,13 +225,15 @@ const DeliveryAddress = ({
                             </option>
                         ))}
                     </select>
+                    {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Sub District <span className="text-red-500">*</span>
                     </label>
                     <select
-                        className="w-full border rounded-md px-3 py-2"
+                        id="subDistrict"
+                        className={`w-full border rounded-md px-3 py-2 ${errors.subDistrict ? 'border-red-500 focus:ring-red-200' : ''}`}
                         value={subDistrict}
                         onChange={onSubDistrictChange}
                         disabled={!district}
@@ -233,6 +245,7 @@ const DeliveryAddress = ({
                             </option>
                         ))}
                     </select>
+                    {errors.subDistrict && <p className="text-red-500 text-xs mt-1">{errors.subDistrict}</p>}
                 </div>
             </div>
             <div className="mb-4">
@@ -240,12 +253,14 @@ const DeliveryAddress = ({
                     Address <span className="text-red-500">*</span>
                 </label>
                 <input
+                    id="address"
                     type="text"
                     placeholder="House no. / Building / Street"
-                    className="w-full border rounded-md px-3 py-2"
+                    className={`w-full border rounded-md px-3 py-2 ${errors.address ? 'border-red-500 focus:ring-red-200' : ''}`}
                     value={address}
                     onChange={onAddressChange}
                 />
+                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
             <div className="flex gap-3">
                 <button

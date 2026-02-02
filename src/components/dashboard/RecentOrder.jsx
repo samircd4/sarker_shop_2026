@@ -16,7 +16,7 @@ const RecentOrder = ({
     sortOrdersDesc,
 }) => {
     return (
-        <div className="bg-white border rounded-lg p-6 shadow-sm">
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     <FaBoxOpen /> Recent Orders
@@ -45,7 +45,12 @@ const RecentOrder = ({
                     <div className="border rounded-lg p-4 bg-white border-gray-200">
                         <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
                             <div className="space-y-1">
-                                <div className="font-semibold text-gray-900">Order #{lastOrder.id}</div>
+                                <Link
+                                    to={`/order-tracking/${lastOrder.id}`}
+                                    className="font-semibold text-gray-900 hover:text-purple-600 transition-colors cursor-pointer block"
+                                >
+                                    Order #{lastOrder.id}
+                                </Link>
                                 <div className="text-sm text-gray-500">{formatDate(lastOrder.created_at)}</div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -80,9 +85,9 @@ const RecentOrder = ({
                                         <tr key={it.id || `${lastOrder.id}-${it.product?.id || it.product_name}`} className="border-b last:border-0">
                                             <td className="py-2 pr-3 font-semibold">
                                                 <Link to={`/products/${it.product?.slug || it.product_name}`}>{it.product?.name || it.product_name}
-                                                <span className="ml-1 text-xs text-gray-500">
-                                                    {it.variant?.color ? `${it.variant?.color}` : ''} {it.variant?.ram ? `${it.variant?.ram}GB` : ''}{it.variant?.storage ? `/${it.variant?.storage}GB` : ''}
-                                                </span>
+                                                    <span className="ml-1 text-xs text-gray-500">
+                                                        {it.variant?.color ? `${it.variant?.color}` : ''} {it.variant?.ram ? `${it.variant?.ram}GB` : ''}{it.variant?.storage ? `/${it.variant?.storage}GB` : ''}
+                                                    </span>
                                                 </Link>
                                             </td>
                                             <td className="py-2 pr-3">{it.quantity}</td>
@@ -97,11 +102,11 @@ const RecentOrder = ({
                                 <div className="font-medium">Shipping Address</div>
                                 <div>{formatAddress(lastOrder.shipping_address)}</div>
                             </div>
-                            <DownloadInvoice order={lastOrder}/>
+                            <DownloadInvoice order={lastOrder} />
                         </div>
                     </div>
-    );
-})()}
+                );
+            })()}
         </div >
     );
 };

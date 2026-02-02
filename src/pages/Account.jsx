@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaGoogle, FaFacebook, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaGoogle } from 'react-icons/fa';
+import { Facebook } from 'lucide-react';
+
+import {
+    User, Mail, Phone, Lock,
+    Eye, EyeOff, ArrowRight
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useCart } from '../context/CartContext.jsx';
 import { toast } from 'react-toastify';
@@ -17,7 +24,6 @@ const Account = () => {
     const navigate = useNavigate();
     const { syncLocalCartToServer } = useCart();
 
-    // Form states
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -33,21 +39,16 @@ const Account = () => {
                 });
                 localStorage.setItem('access_token', res.data.access_token || res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
-
                 await syncLocalCartToServer();
-                toast.success("Logged in with Google!");
+                toast.success("Welcome back! Logged in with Google.");
                 navigate('/dashboard');
             } catch (err) {
-                console.error("Google login error details:", err.response?.data || err.message);
-                const errorMsg = err.response?.data?.non_field_errors?.[0] ||
-                    err.response?.data?.detail ||
-                    "Google login failed. Please try again.";
-                toast.error(errorMsg);
+                toast.error("Google login failed. Please try again.");
             } finally {
                 setLoading(false);
             }
         },
-        onError: () => toast.error("Google login permission denied"),
+        onError: () => toast.error("Google login failed"),
     });
 
     const handleFacebookResponse = async (response) => {
@@ -59,69 +60,48 @@ const Account = () => {
                 });
                 localStorage.setItem('access_token', res.data.access_token || res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh_token || res.data.refresh);
-
                 await syncLocalCartToServer();
-                toast.success("Logged in with Facebook!");
+                toast.success("Welcome! Logged in with Facebook.");
                 navigate('/dashboard');
             } catch (err) {
-                console.error("Facebook login error:", err);
-                toast.error("Facebook login failed. Please try again.");
+                toast.error("Facebook login failed.");
             } finally {
                 setLoading(false);
             }
         }
     };
 
-    const toggleMode = () => setIsLogin(!isLogin);
-
-    // Redirect authenticated users away from Account page
     useEffect(() => {
         const token = localStorage.getItem('access_token');
         if (!token) return;
         api.get('/customers/me/').then(() => {
             navigate('/dashboard');
-        }).catch(() => {
-            // stay on account page if token invalid/expired
-        });
+        }).catch(() => { });
     }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
             if (isLogin) {
-                // Login Logic
-                const response = await axios.post(`${API_URL}/auth/login/`, {
-                    email,
-                    password
-                });
-
-                // Assuming backend returns access/refresh tokens
+                const response = await axios.post(`${API_URL}/auth/login/`, { email, password });
                 localStorage.setItem('access_token', response.data.access);
                 localStorage.setItem('refresh_token', response.data.refresh);
-
                 await syncLocalCartToServer();
-                toast.success("Logged in successfully!");
-                navigate('/'); // Redirect to home or previous page
+                toast.success("Welcome back to Sarker Shop!");
+                navigate('/');
             } else {
-                // Register Logic
                 await axios.post(`${API_URL}/auth/register/`, {
                     full_name: name,
                     email,
                     phone_number: phone,
                     password
                 });
-
-                toast.success("Account created successfully! Please log in.");
-                setIsLogin(true); // Switch to login mode
+                toast.success("Account created successfully! Let's sign you in.");
+                setIsLogin(true);
             }
         } catch (error) {
-            console.error("Auth error:", error);
-            const msg = error.response?.data?.email?.[0] ||
-                error.response?.data?.detail ||
-                JSON.stringify(error.response?.data) ||
-                "Authentication failed";
+            const msg = error.response?.data?.detail || "Authentication failed. check your credentials.";
             toast.error(msg);
         } finally {
             setLoading(false);
@@ -129,170 +109,234 @@ const Account = () => {
     };
 
     return (
-        <div className="min-h-[70vh] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        {isLogin ? 'Sign in to your account' : 'Create a new account'}
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Or{' '}
-                        <button
-                            onClick={toggleMode}
-                            className="font-medium text-purple-600 hover:text-purple-500 focus:outline-none underline"
-                        >
-                            {isLogin ? 'create a new account' : 'sign in to existing account'}
-                        </button>
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <input type="hidden" name="remember" defaultValue="true" />
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        {!isLogin && (
-                            <>
-                                <div>
-                                    <label htmlFor="name" className="sr-only">Full Name</label>
-                                    <input
-                                        id="name"
-                                        name="name"
-                                        type="text"
-                                        required
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                                        placeholder="Full Name"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="phone" className="sr-only">Phone Number</label>
-                                    <input
-                                        id="phone"
-                                        name="phone"
-                                        type="tel"
-                                        required
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                                        placeholder="Phone Number"
-                                    />
-                                </div>
-                            </>
-                        )}
-                        <div>
-                            <label htmlFor="email-address" className="sr-only">Email address</label>
-                            <input
-                                id="email-address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-t-md' : ''} focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm`}
-                                placeholder="Email address"
-                            />
-                        </div>
-                        <div className="relative">
-                            <label htmlFor="password" className="sr-only">Password</label>
-                            <input
-                                id="password"
-                                name="password"
-                                type={showPassword ? 'text' : 'password'}
-                                autoComplete="current-password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword((s) => !s)}
-                                className="absolute right-2 top-1/2 transform -translate-y-1/2 z-20 text-gray-500 hover:text-gray-700 focus:outline-none"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                                Remember me
-                            </label>
-                        </div>
-
-                        {isLogin && (
-                            <div className="text-sm">
-                                <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
-                                    Forgot your password?
-                                </a>
-                            </div>
-                        )}
-                    </div>
-
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-70"
-                        >
-                            {loading ? 'Processing...' : (isLogin ? 'Sign in' : 'Sign up')}
-                        </button>
-                    </div>
-
-                    <div className="mt-6">
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300" />
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => googleLogin()}
-                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-                                >
-                                    <FaGoogle className="h-5 w-5 text-red-500" />
-                                    <span className="ml-2">Google</span>
-                                </button>
-                            </div>
-
-                            <div className="relative">
-                                <FacebookLogin
-                                    appId={FB_APP_ID}
-                                    version="13.0"
-                                    onSuccess={handleFacebookResponse}
-                                    onFailure={() => toast.error("Facebook login failed")}
-                                    render={(renderProps) => (
-                                        <button
-                                            type="button"
-                                            onClick={renderProps.onClick}
-                                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
-                                        >
-                                            <FaFacebook className="h-5 w-5 text-blue-600" />
-                                            <span className="ml-2">Facebook</span>
-                                        </button>
-                                    )}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </form>
+        <div className="min-h-screen relative flex items-center justify-center bg-[#f8fafc] overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <motion.div
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 90, 0],
+                        x: [0, 50, 0]
+                    }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-100 rounded-full blur-[100px] opacity-60"
+                />
+                <motion.div
+                    animate={{
+                        scale: [1, 1.3, 1],
+                        rotate: [0, -90, 0],
+                        x: [0, -50, 0]
+                    }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-100 rounded-full blur-[100px] opacity-60"
+                />
             </div>
+
+            <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl overflow-hidden relative z-10 border border-white">
+
+                {/* Left Side: Branding/Visual */}
+                <div className="hidden lg:flex flex-col justify-center p-12 bg-gradient-to-br from-purple-600 to-indigo-700 text-white relative overflow-hidden">
+                    <div className="relative z-10 space-y-8">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <h1 className="text-5xl font-black tracking-tight mb-4 leading-tight">
+                                Join the Elite <br /> Tech Hub.
+                            </h1>
+                            <p className="text-purple-100 text-lg leading-relaxed max-w-sm">
+                                Experience premium gadgets, exclusive deals, and lightning-fast support. Your digital evolution starts here.
+                            </p>
+                        </motion.div>
+
+                        <div className="grid grid-cols-2 gap-6 pt-10">
+                            {[
+                                { label: 'Active Users', val: '50k+' },
+                                { label: 'Products', val: '2000+' },
+                                { label: 'Fast Delivery', val: '24h' },
+                                { label: 'Trust Score', val: '4.9/5' }
+                            ].map((stat, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 + (i * 0.1) }}
+                                    className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all"
+                                >
+                                    <p className="text-2xl font-black">{stat.val}</p>
+                                    <p className="text-xs text-purple-200 uppercase tracking-widest font-bold">{stat.label}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Decorative Gradients for Left Side */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl animate-pulse" />
+                </div>
+
+                {/* Right Side: Auth Form */}
+                <div className="p-8 sm:p-12">
+                    <div className="max-w-md mx-auto">
+                        <div className="text-center lg:text-left mb-10">
+                            <motion.h2
+                                key={isLogin ? 'login' : 'signup'}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-4xl font-extrabold text-gray-900 tracking-tight"
+                            >
+                                {isLogin ? 'Welcome Back' : 'Create Account'}
+                            </motion.h2>
+                            <p className="mt-4 text-gray-500 font-medium">
+                                {isLogin ? "Don't have an account?" : 'Already a member?'}
+                                <button
+                                    onClick={() => setIsLogin(!isLogin)}
+                                    className="ml-2 text-purple-600 font-bold hover:underline curso"
+                                >
+                                    {isLogin ? 'Sign up for free' : 'Sign in'}
+                                </button>
+                            </p>
+                        </div>
+
+                        <AnimatePresence mode="wait">
+                            <motion.form
+                                key={isLogin ? 'form-login' : 'form-register'}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                onSubmit={handleSubmit}
+                                className="space-y-4"
+                            >
+                                {!isLogin && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        className="space-y-4"
+                                    >
+                                        <div className="relative group">
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                            <input
+                                                type="text"
+                                                required
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium"
+                                                placeholder="Full Name"
+                                            />
+                                        </div>
+                                        <div className="relative group">
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium"
+                                                placeholder="Phone Number"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium"
+                                        placeholder="Email Address"
+                                    />
+                                </div>
+
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium"
+                                        placeholder="Password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+
+                                {isLogin && (
+                                    <div className="flex justify-end">
+                                        <a href="#" className="text-sm font-bold text-gray-400 hover:text-purple-600 transition-colors">Forgot password?</a>
+                                    </div>
+                                )}
+
+                                <motion.button
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl shadow-purple-900/10 hover:shadow-purple-900/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2 group disabled:opacity-70 mt-4 cursor-pointer"
+                                >
+                                    {loading ? 'Processing...' : (
+                                        <>
+                                            {isLogin ? 'Sign In' : 'Join Now'}
+                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </motion.button>
+                            </motion.form>
+                        </AnimatePresence>
+
+                        <div className="mt-10">
+                            <div className="relative flex items-center justify-center">
+                                <span className="absolute inset-0 flex items-center px-4">
+                                    <span className="w-full border-t border-gray-100" />
+                                </span>
+                                <span className="relative px-4 bg-white text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Or Access With</span>
+                            </div>
+
+                            <div className="mt-8 grid grid-cols-2 gap-4">
+                                {/* --- GOOGLE SECTION START --- */}
+                                <div className="google-login-container">
+                                    <motion.button
+                                        whileHover={{ y: -2 }}
+                                        onClick={() => googleLogin()}
+                                        className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
+                                    >
+                                        <FaGoogle className="text-red-500 transition-transform group-hover:scale-110" />
+                                        Google
+                                    </motion.button>
+                                </div>
+                                {/* --- GOOGLE SECTION END --- */}
+
+                                {/* --- FACEBOOK SECTION START --- */}
+                                <div>
+                                    <motion.button
+                                    whileHover={{ y: -2 }}
+                                    className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all group cursor-pointer"
+                                    > <Facebook color="#222dc3" />
+                                    Facebook <span className="text-xs text-gray-400">beta</span>
+                                    </motion.button>
+                                     
+                                </div>
+
+
+                                {/* --- FACEBOOK SECTION END --- */}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Visual Flair: Floating shapes */}
+            <div className="absolute top-[20%] right-[-5%] w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-30 animate-bounce" />
+            <div className="absolute bottom-[20%] left-[-5%] w-32 h-32 bg-indigo-200 rounded-full blur-3xl opacity-30 animate-pulse" />
         </div>
     );
 };

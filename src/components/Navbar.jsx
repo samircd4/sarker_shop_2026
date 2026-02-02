@@ -3,6 +3,7 @@ import { FaCaretDown, FaUser } from 'react-icons/fa'
 import { IoCartOutline } from 'react-icons/io5'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { FiMenu } from 'react-icons/fi';
+import { UserLock } from 'lucide-react';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
 import { useCart } from '../context/CartContext'
@@ -109,10 +110,11 @@ const Navbar = () => {
                         <ul className='md:flex gap-7 items-center text-xl font-semibold hidden'>
                             <NavLink to={'/'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Home</li></NavLink>
                             <NavLink to={"/products"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Store</li></NavLink>
+                            <NavLink to={"/order-tracking"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Tracking</li></NavLink>
                             {/* <NavLink to={"/categories"} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>Categories</li></NavLink> */}
                             <NavLink to={'/about'} className={({ isActive }) => `${isActive ? "border-b-3 transition-all border-primary-500 text-purple-600" : "text-neutral-900"} cursor-pointer`}><li>About</li></NavLink>
                         </ul>
-                        <button className='relative' onClick={() => setCartOpen(true)} aria-label="Open cart">
+                        <button className='relative cursor-pointer' onClick={() => setCartOpen(true)} aria-label="Open cart">
                             <IoCartOutline className='h-7 w-7' />
                             <span className='bg-purple-600 px-2 rounded-full absolute -top-3 -right-3 text-white'>{totalCount}</span>
                         </button>
@@ -120,7 +122,7 @@ const Navbar = () => {
                             {(userProfile?.avatar || userProfile?.social_avatar_url) ? (
                                 <img src={userProfile.avatar || userProfile.social_avatar_url} alt="User" className="h-8 w-8 rounded-full border border-purple-200 object-cover shadow-sm" />
                             ) : (
-                                <FaUser className='h-6 w-6' />
+                                <UserLock className='h-6 w-6' />
                             )}
                         </button>
                     </nav>

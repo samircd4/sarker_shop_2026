@@ -7,7 +7,8 @@ const EmptyCart = ({
     description = "Looks like you haven't added any products to your cart yet.",
     buttonText = "SHOP NOW",
     buttonLink = "/products",
-    compact = false
+    compact = false,
+    onClick = () => { }
 }) => {
     return (
         <div className={`flex flex-col items-center justify-center ${compact ? 'py-6' : 'py-12'} px-4 bg-white rounded-2xl border border-neutral-100 shadow-sm transition-all hover:shadow-md animate-fade-in`}>
@@ -30,6 +31,7 @@ const EmptyCart = ({
 
             <Link
                 to={buttonLink}
+                onClick={onClick}
                 className={`group relative overflow-hidden bg-purple-600 hover:bg-purple-700 text-white ${compact ? 'px-6 py-2 rounded-lg text-sm' : 'px-10 py-4 rounded-xl font-bold tracking-wider'} transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center gap-3`}
             >
                 <span className="relative z-10">{buttonText}</span>

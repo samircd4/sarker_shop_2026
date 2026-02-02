@@ -117,6 +117,8 @@ const Checkout = () => {
         }
     }, []);
 
+    const [errors, setErrors] = useState({});
+
     // Totals (based on selected rows)
     const subtotal = useMemo(() => {
         return cartItem.reduce(
@@ -131,9 +133,39 @@ const Checkout = () => {
         subtotal + deliveryCharge - deliveryDiscount - discount
     );
 
-    const handlePlaceOrder = async () => {
-        if (!fullName || !phone || !address || !division || !district || !subDistrict || !email) {
+    const validateFields = () => {
+        const newErrors = {};
+        if (!email) newErrors.email = "Email is required";
+        if (!fullName) newErrors.fullName = "Full Name is required";
+        if (!phone) newErrors.phone = "Phone is required";
+        if (!division) newErrors.division = "Division is required";
+        if (!district) newErrors.district = "District is required";
+        if (!subDistrict) newErrors.subDistrict = "Sub District is required";
+        if (!address) newErrors.address = "Address is required";
+
+        if (paymentMethod !== 'card_mfs') {
+            if (!paymentDetails.paid_from) newErrors.paid_from = "Payment number is required";
+            if (!paymentDetails.transaction_id) newErrors.transaction_id = "Transaction ID is required";
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            // Find first error and focus
+            const firstErrorKey = Object.keys(newErrors)[0];
+            const element = document.getElementById(firstErrorKey);
+            if (element) {
+                element.focus();
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             toast.error("Please fill in all required fields");
+            return false;
+        }
+        return true;
+    };
+
+    const handlePlaceOrder = async () => {
+        if (!validateFields()) {
             return;
         }
 
@@ -195,7 +227,18 @@ const Checkout = () => {
                     }
                 });
             } else {
-                navigate("/order-success", { state: { email, name: fullName, phone } });
+                navigate("/order-success", {
+                    state: {
+                        email,
+                        name: fullName,
+                        phone,
+                        newOrder: {
+                            id: response?.data?.id,
+                            total: totalPayable,
+                            items_count: itemsInput.length
+                        }
+                    }
+                });
             }
 
         } catch (error) {
@@ -240,6 +283,16 @@ const Checkout = () => {
         }
     };
 
+    const clearError = (field) => {
+        if (errors[field]) {
+            setErrors(prev => {
+                const newErr = { ...prev };
+                delete newErr[field];
+                return newErr;
+            });
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto px-4">
             <h1 className="text-2xl md:text-3xl font-bold mb-6 text-neutral-800 uppercase">
@@ -266,16 +319,17 @@ const Checkout = () => {
                         subDistrict={subDistrict}
                         address={address}
                         addressType={addressType}
-                        onEmailChange={(e) => setEmail(e.target.value)}
-                        onFullNameChange={(e) => setFullName(e.target.value)}
-                        onPhoneChange={(e) => setPhone(e.target.value)}
-                        onDivisionChange={(e) => setDivision(e.target.value)}
-                        onDistrictChange={(e) => setDistrict(e.target.value)}
-                        onSubDistrictChange={(e) => setSubDistrict(e.target.value)}
-                        onAddressChange={(e) => setAddress(e.target.value)}
+                        onEmailChange={(e) => { setEmail(e.target.value); clearError('email'); }}
+                        onFullNameChange={(e) => { setFullName(e.target.value); clearError('fullName'); }}
+                        onPhoneChange={(e) => { setPhone(e.target.value); clearError('phone'); }}
+                        onDivisionChange={(e) => { setDivision(e.target.value); clearError('division'); }}
+                        onDistrictChange={(e) => { setDistrict(e.target.value); clearError('district'); }}
+                        onSubDistrictChange={(e) => { setSubDistrict(e.target.value); clearError('subDistrict'); }}
+                        onAddressChange={(e) => { setAddress(e.target.value); clearError('address'); }}
                         onAddressTypeChange={setAddressType}
                         savedAddresses={savedAddresses}
                         onAddressSelect={handleAddressSelect}
+                        errors={errors}
                     />
                 </div>
 
@@ -285,8 +339,13 @@ const Checkout = () => {
                         paymentMethod={paymentMethod}
                         onChange={setPaymentMethod}
                         paymentDetails={paymentDetails}
-                        onDetailsChange={setPaymentDetails}
+                        onDetailsChange={(details) => {
+                            setPaymentDetails(details);
+                            if (details.paid_from) clearError('paid_from');
+                            if (details.transaction_id) clearError('transaction_id');
+                        }}
                         totalPayable={totalPayable}
+                        errors={errors}
                     />
 
                     <CheckoutSummary
@@ -301,9 +360,7 @@ const Checkout = () => {
                         onApplyVoucher={applyVoucher}
                         onAcceptedChange={(e) => setAccepted(e.target.checked)}
                         onConfirmOrder={handlePlaceOrder}
-                        isPaymentValid={
-                            (paymentDetails.paid_from && paymentDetails.transaction_id)
-                        }
+                        isPaymentValid={true}
                         onNavigateTerms={() => navigate("/terms")}
                     />
                 </div>

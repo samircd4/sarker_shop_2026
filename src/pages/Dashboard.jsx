@@ -362,7 +362,7 @@ const Dashboard = () => {
                         <nav className="p-3 space-y-1">
                             <button
                                 onClick={() => setActiveTab('dashboard')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'dashboard'
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${activeTab === 'dashboard'
                                     ? 'bg-purple-600 text-white shadow-md'
                                     : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
@@ -373,7 +373,7 @@ const Dashboard = () => {
 
                             <button
                                 onClick={() => setActiveTab('orders')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'orders'
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${activeTab === 'orders'
                                     ? 'bg-purple-600 text-white shadow-md'
                                     : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
@@ -384,7 +384,7 @@ const Dashboard = () => {
 
                             <button
                                 onClick={() => setActiveTab('address')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'address'
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${activeTab === 'address'
                                     ? 'bg-purple-600 text-white shadow-md'
                                     : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
@@ -395,7 +395,7 @@ const Dashboard = () => {
 
                             <button
                                 onClick={() => setActiveTab('profile')}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile'
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all cursor-pointer ${activeTab === 'profile'
                                     ? 'bg-purple-600 text-white shadow-md'
                                     : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600'
                                     }`}
@@ -412,7 +412,7 @@ const Dashboard = () => {
                                     localStorage.removeItem('refresh_token');
                                     navigate('/account');
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-all cursor-pointer"
                             >
                                 <FaSignOutAlt />
                                 <span className="font-medium text-sm">Logout</span>

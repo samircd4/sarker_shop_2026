@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const slides = [
     {
@@ -90,9 +91,12 @@ const HeroSection = () => {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.7 }}
                         >
-                            <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 cursor-pointer animate-pulse-glow hover:animate-none hover:shadow-primary-glow transform hover:scale-105">
+                            <Link
+                                to="/products"
+                                className="inline-block bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 cursor-pointer animate-pulse-glow hover:animate-none hover:shadow-primary-glow transform hover:scale-105"
+                            >
                                 Shop Now
-                            </button>
+                            </Link>
                         </motion.div>
                     </div>
                 </motion.div>

@@ -41,6 +41,7 @@ const CartPanel = ({ open, onClose }) => {
                                     compact={true}
                                     buttonText="GO TO SHOP"
                                     description="Your cart is waiting for some amazing products!"
+                                    onClick={onClose}
                                 />
                             </div>
                         )}

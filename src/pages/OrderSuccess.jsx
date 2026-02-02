@@ -4,6 +4,8 @@ import { FaCheckCircle, FaUserPlus, FaArrowRight } from 'react-icons/fa';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+import CopyableText from '../components/CopyableText';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const OrderSuccess = () => {
@@ -56,7 +58,8 @@ const OrderSuccess = () => {
                 full_name: name,
                 email,
                 phone_number: phone,
-                password
+                password,
+                link_order_id: location.state?.newOrder?.id // Pass order ID to link order
             });
 
             toast.success("Account created successfully! Please log in.");
@@ -82,9 +85,16 @@ const OrderSuccess = () => {
                     <FaCheckCircle className="h-8 w-8 text-green-600" />
                 </div>
 
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-                    Order Placed Successfully!
-                </h2>
+                <div className="flex flex-col items-center justify-center mb-6">
+                    <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
+                        Order Placed Successfully!
+                    </h2>
+                    {location.state?.newOrder?.id && (
+                        <div className="mt-2 text-xl font-medium text-gray-700 flex items-center gap-2">
+                            Order ID: <CopyableText value={location.state.newOrder.id.toString()} />
+                        </div>
+                    )}
+                </div>
                 <p className="text-gray-600 mb-8">
                     Thank you for your purchase. A confirmation email has been sent to <span className="font-semibold">{email || 'your email'}</span>.
                 </p>

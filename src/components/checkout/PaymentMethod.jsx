@@ -10,6 +10,7 @@ const PaymentMethod = ({
     onDetailsChange,
     paymentDetails,
     totalPayable,
+    errors = {}
 }) => {
     const handleDetailChange = (e) => {
         onDetailsChange({
@@ -109,29 +110,33 @@ const PaymentMethod = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Paid From
+                                Paid From <span className="text-red-500">*</span>
                             </label>
                             <input
+                                id="paid_from"
                                 type="text"
                                 name="paid_from"
                                 value={paymentDetails.paid_from}
                                 onChange={handleDetailChange}
                                 placeholder="e.g., 01xxxxxxxxx"
-                                className="w-full border rounded-md px-3 py-2"
+                                className={`w-full border rounded-md px-3 py-2 ${errors.paid_from ? 'border-red-500 focus:ring-red-200' : ''}`}
                             />
+                            {errors.paid_from && <p className="text-red-500 text-xs mt-1">{errors.paid_from}</p>}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Transaction ID
+                                Transaction ID <span className="text-red-500">*</span>
                             </label>
                             <input
+                                id="transaction_id"
                                 type="text"
                                 name="transaction_id"
                                 value={paymentDetails.transaction_id}
                                 onChange={handleDetailChange}
                                 placeholder="e.g., 8N7F6G5H"
-                                className="w-full border rounded-md px-3 py-2"
+                                className={`w-full border rounded-md px-3 py-2 ${errors.transaction_id ? 'border-red-500 focus:ring-red-200' : ''}`}
                             />
+                            {errors.transaction_id && <p className="text-red-500 text-xs mt-1">{errors.transaction_id}</p>}
                         </div>
                     </div>
                     <div className="mt-4">

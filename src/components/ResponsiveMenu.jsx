@@ -1,7 +1,8 @@
 // import { UserButton, useUser } from '@clerk/clerk-react'
 import React from 'react'
-import { FaUserCircle, FaHome, FaInfoCircle, FaPhone, FaShoppingBag } from 'react-icons/fa'
+import { FaUserCircle, FaHome, FaPhone, FaShoppingBag, FaTruck } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
+import { UserLock } from 'lucide-react'
 
 const ResponsiveMenu = () => {
     // const { user } = useUser()
@@ -10,9 +11,9 @@ const ResponsiveMenu = () => {
     const menuItems = [
         { path: '/', label: 'Home', icon: FaHome },
         { path: '/products', label: 'Products', icon: FaShoppingBag },
-        { path: '/about', label: 'About', icon: FaInfoCircle },
+        { path: '/order-tracking', label: 'Tracking', icon: FaTruck },
         { path: '/contact', label: 'Contact', icon: FaPhone },
-        { path: '/account', label: 'Account', icon: FaUserCircle },
+        { path: '/account', label: 'Account', icon: UserLock },
     ]
 
     return (
@@ -27,8 +28,8 @@ const ResponsiveMenu = () => {
                             key={item.path}
                             to={item.path}
                             className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors ${isActive
-                                    ? 'text-purple-500 bg-purple-50'
-                                    : 'text-neutral-600 hover:text-primary-500'
+                                ? 'text-purple-500 bg-purple-50'
+                                : 'text-neutral-600 hover:text-primary-500'
                                 }`}
                         >
                             <Icon size={20} />
